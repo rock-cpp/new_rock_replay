@@ -34,6 +34,7 @@ public:
     inline const double getReplayFactor() { return replayFactor; };
     inline const double getCurrentSpeed() { return currentSpeed; };
     inline const std::vector<std::string> getFileNames() { return filenames; };
+    inline const bool isValid() { return valid; };
     
 private:  
     bool restartReplay;
@@ -41,6 +42,7 @@ private:
     mutable double currentSpeed;
     uint curIndex;
     bool finished;
+    bool valid;
     
     bool play;
     boost::thread *replayThread;

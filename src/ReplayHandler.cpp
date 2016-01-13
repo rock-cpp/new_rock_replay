@@ -48,7 +48,20 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             return false;
         }
 
-        return orocos_cpp::PluginHelper::loadTypekitAndTransports(tkName);
+        if(!orocos_cpp::PluginHelper::loadTypekitAndTransports(tkName))
+        {
+            return false;
+        }
+     
+        RTT::types::TypeInfo* type = ti->type(typestr);
+        if (! type)
+        {
+            std::cerr << "2 cannot find " << typestr << " in the type info repository" << std::endl;
+            return false;
+        }
+        
+        return false;
+        
     }
     );
     
@@ -85,19 +98,29 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         streamToTask[gIdx] = task;
     }
 
-    replayFactor = 1.;
-    currentSpeed = replayFactor;
-    curIndex = 0;
-    finished = false;
-    play = false;
-    replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
+    valid = !multiIndex->getAllStreams().empty();
+    if(!valid)
+    {
+        std::cerr << "empty streams loaded" << std::endl;
+    }
+    else
+    {
+        replayFactor = 1.;
+        currentSpeed = replayFactor;
+        curIndex = 0;
+        finished = false;
+        play = false;
+        replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
+    }
 }
 
 
 ReplayHandler::~ReplayHandler()
 {
     delete multiIndex;
-    delete replayThread;
+    
+    if(valid)
+        delete replayThread;
 }
 
 void ReplayHandler::replaySample(size_t index) const
@@ -116,7 +139,7 @@ void ReplayHandler::replaySample(size_t index) const
 }
 
 void ReplayHandler::replaySamples()
-{
+{   
     boost::unique_lock<boost::mutex> lock(mut);
     
     std::cout << "Replaying all samples" << std::endl;
@@ -174,6 +197,7 @@ void ReplayHandler::replaySamples()
             continue;
         }
         
+      
         curStamp = getTimeStamp(curIndex);
     
 //         std::cout << "NExt Sample " << curIndex << " Cur Time " << curStamp << " last Time " << lastStamp <<  std::endl;
@@ -181,7 +205,7 @@ void ReplayHandler::replaySamples()
         
         if(lastStamp > curStamp)
         {
-            std::cout << "Warning: invalid sample order curStamp " << curStamp <<  " LAst Stamp " << lastStamp << std::endl;
+            std::cout << "Warning: invalid sample order curStamp " << curStamp <<  " Last Stamp " << lastStamp << std::endl;
         }
 
         //hm, also expensive, is there a way to reduce this ?
@@ -210,12 +234,11 @@ void ReplayHandler::replaySamples()
             currentSpeed = logTimeSinceStart.toSeconds() / systemTimeSinceStart.toSeconds();   
         }           
     }
-    
+
 }
 
 const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
 {    
-//     size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(globalIndex);
     pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalIndex)->getFileIndex();
     return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));
 }
@@ -247,14 +270,21 @@ void ReplayHandler::setSampleIndex(uint index)
 
 void ReplayHandler::toggle()
 {
-    if(!play) {
-        play = true;
-        restartReplay = true;
-        cond.notify_one();
-        std::cout << "Starting replay" << std::endl;
-    } else {
-        play = false;
-        std::cout << "Stopping replay" << std::endl;
+    if(!valid)
+    {
+        std::cerr << "empty streams loaded" << std::endl;
+    }
+    else
+    {
+        if(!play) {
+            play = true;
+            restartReplay = true;
+            cond.notify_one();
+            std::cout << "Starting replay" << std::endl;
+        } else {
+            play = false;
+            std::cout << "Stopping replay" << std::endl;
+        }
     }
 }
 
