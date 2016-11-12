@@ -20,7 +20,7 @@ public:
     void replaySamples();
     
     void toggle();
-
+    void stop();
     
     void next();
     void previous();
@@ -29,6 +29,8 @@ public:
     void setReplayFactor(double factor);
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
+    inline const std::string getCurTimeStamp() { return curTimeStamp; };
+    inline const std::string getCurSamplePortName() { return curSamplePortName; };
     inline const uint getCurIndex() { return curIndex; };
     inline const size_t getMaxIndex() { return multiIndex->getSize(); };
     inline const double getReplayFactor() { return replayFactor; };
@@ -40,6 +42,8 @@ private:
     bool restartReplay;
     double replayFactor;
     mutable double currentSpeed;
+    mutable std::string curTimeStamp;
+    mutable std::string curSamplePortName;
     uint curIndex;
     bool finished;
     bool valid;
@@ -56,4 +60,5 @@ private:
     
     void replaySample(size_t index) const;
     const base::Time getTimeStamp(size_t globalIndex) const;
+    void init();
 };

@@ -53,14 +53,14 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             return false;
         }
      
-        RTT::types::TypeInfo* type = ti->type(typestr);
+        RTT::types::TypeInfo* type = ti->type(dataStream->getCXXType());
         if (! type)
         {
             std::cerr << "2 cannot find " << typestr << " in the type info repository" << std::endl;
             return false;
         }
         
-        return false;
+        return true;
         
     }
     );
@@ -105,12 +105,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     }
     else
     {
-        replayFactor = 1.;
-        currentSpeed = replayFactor;
-        curIndex = 0;
-        finished = false;
-        play = false;
-        replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
+        init();
     }
 }
 
@@ -123,6 +118,19 @@ ReplayHandler::~ReplayHandler()
         delete replayThread;
 }
 
+void ReplayHandler::init()
+{
+    replayFactor = 1.;
+    currentSpeed = replayFactor;
+    curIndex = 0;
+    curTimeStamp = "";
+    curSamplePortName = "";
+    finished = false;
+    play = false;
+    replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
+}
+
+
 void ReplayHandler::replaySample(size_t index) const
 {
     try 
@@ -130,6 +138,7 @@ void ReplayHandler::replaySample(size_t index) const
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
 //         std::cout << "Gidx is " << globalStreamIndex << std::endl;
+        curSamplePortName = inputSt->getName();
         streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
     } 
     catch(...)
@@ -196,12 +205,9 @@ void ReplayHandler::replaySamples()
             play = false;
             continue;
         }
-        
       
-        curStamp = getTimeStamp(curIndex);
-    
-//         std::cout << "NExt Sample " << curIndex << " Cur Time " << curStamp << " last Time " << lastStamp <<  std::endl;
-
+        curStamp = getTimeStamp(curIndex);;
+        curTimeStamp = curStamp.toString();
         
         if(lastStamp > curStamp)
         {
@@ -240,9 +246,14 @@ void ReplayHandler::replaySamples()
 const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
 {    
     pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalIndex)->getFileIndex();
-    return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));
+    return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));;
 }
 
+void ReplayHandler::stop()
+{
+    delete replayThread;
+    init();
+}
 
 
 void ReplayHandler::setReplayFactor(double factor)

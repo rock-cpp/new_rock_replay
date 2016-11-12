@@ -14,8 +14,45 @@ rock_library(rock_replay
 
 target_link_libraries(rock_replay pthread)
 
-rock_executable(rock_replay2 Main.cpp
-    DEPS rock_replay
-    DEPS_PKGCONFIG 
+
+
+find_package(Qt4 REQUIRED)
+find_path(QWT_INCLUDE_DIR
+    NAMES qwt_plot.h
+    HINTS ${QT_INCLUDE_DIR}
+    PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5
 )
+
+find_library(QWT_LIBRARIES
+        NAMES qwt qwt-qt4
+)
+
+
+QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
+
+INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
+
+rock_executable(viz 
+    SOURCES
+        Main.cpp
+        ReplayGUI.cpp
+        Vizkit3dPluginRepository.cpp
+        ${VIZ_RESC}
+    HEADERS
+        ReplayGUI.h
+    MOC
+        ReplayGUI.h
+        ressources.qrc
+    DEPS_PKGCONFIG
+        QtCore
+        QtGui
+        vizkit3d
+    DEPS
+        rock_replay
+    UI
+        main.ui
+)
+
+TARGET_LINK_LIBRARIES(viz ${QWT_LIBRARIES})
+
 
