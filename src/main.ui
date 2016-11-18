@@ -238,7 +238,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_sample_count">
+         <widget class="QLabel" name="numSamplesLabel">
           <property name="text">
            <string>/34123</string>
           </property>
@@ -659,19 +659,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QListView" name="taskNameList">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>300</width>
-              <height>16777215</height>
-             </size>
-            </property>
+           <widget class="QTreeView" name="taskNameList">
             <property name="editTriggers">
              <set>QAbstractItemView::NoEditTriggers</set>
             </property>
@@ -683,86 +671,15 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QTreeView" name="treeView">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>180</width>
-                <height>110</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item>
              <layout class="QVBoxLayout" name="verticalLayout_9">
               <property name="rightMargin">
                <number>10</number>
               </property>
-              <item>
-               <widget class="QPushButton" name="pushButton_6">
-                <property name="text">
-                 <string>Add</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="ressources.qrc">
-                  <normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/plus.svg</normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/plus.svg</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_4">
-                <property name="text">
-                 <string>Remove</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="ressources.qrc">
-                  <normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/cancel.svg</normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/cancel.svg</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_8">
-                <property name="text">
-                 <string>Clear</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="ressources.qrc">
-                  <normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/trash.svg</normaloff>:/icons/icons/Icons-master/picol_latest_prerelease_svg/trash.svg</iconset>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
            </layout>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QTreeView" name="treeView_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>300</height>
-           </size>
-          </property>
-         </widget>
         </item>
        </layout>
       </item>
