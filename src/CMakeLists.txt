@@ -36,7 +36,6 @@ rock_executable(viz
     SOURCES
         Main.cpp
         ReplayGUI.cpp
-        Vizkit3dPluginRepository.cpp
         ${VIZ_RESC}
     HEADERS
         ReplayGUI.h

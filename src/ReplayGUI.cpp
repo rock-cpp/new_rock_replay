@@ -1,5 +1,4 @@
 #include "ReplayGUI.h"
-#include <vizkit3d/Vizkit3DWidget.hpp>
 #include <qwt_abstract_scale_draw.h>
 
 
@@ -41,17 +40,12 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
     QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
     
-    vizkit3d::Vizkit3DWidget *vizkit3dWidget = new vizkit3d::Vizkit3DWidget();
-    QStringList *plugins = vizkit3dWidget->getAvailablePlugins();
-    pluginRepo = new Vizkit3dPluginRepository(*plugins);
-    delete plugins;
     
 }
 
 ReplayGui::~ReplayGui()
 {
     delete replayHandler;
-    delete pluginRepo;
 }
 
 
