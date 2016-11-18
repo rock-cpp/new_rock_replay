@@ -2,10 +2,9 @@
 #define REPLAY_GUI_H
 
 #include "ReplayHandler.hpp"
-#include "Vizkit3dPluginRepository.hpp"
 
 #include <QMainWindow>
-#include <QStringListModel>
+#include <QStandardItemModel>
 #include <QTimer>
 
 #include "ui_main.h"
@@ -19,17 +18,14 @@ public:
     ~ReplayGui();
     
     void initReplayHandler(int argc, char* argv[]);
-    void updateTaskNames();
+    void updateTaskView();
 
 private:
     Ui::MainWindow ui;
     ReplayHandler *replayHandler;
     
     // models
-    QStringListModel *taskNameListModel;
-    
-    // lists
-    QStringList *taskNameList;
+    QStandardItemModel *tasksModel;
     
     // icons
     QIcon playIcon, pauseIcon;
@@ -37,13 +33,10 @@ private:
     // timers
     QTimer *statusUpdateTimer;
     
-    // labels
-    QLabel *label_sample_count;
     
     double sliderToBox(int val);
     int boxToSlider(double val);
-    
-    Vizkit3dPluginRepository *pluginRepo;
+   
     
     
 public slots:

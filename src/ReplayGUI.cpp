@@ -1,18 +1,17 @@
 #include "ReplayGUI.h"
 #include <qwt_abstract_scale_draw.h>
-
+#include <qwt_plot_curve.h>
 
 ReplayGui::ReplayGui(QMainWindow *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
     
-    // initing  lists
-    taskNameList = new QStringList();
     
     // initing models
-    taskNameListModel = new QStringListModel(*taskNameList);
-    ui.taskNameList->setModel(taskNameListModel);    
+    tasksModel = new QStandardItemModel();
+    ui.taskNameList->setModel(tasksModel);    
+    tasksModel->setHorizontalHeaderItem(0, new QStandardItem(QString("Tasknames")));
     
     // timer
     statusUpdateTimer = new QTimer();
@@ -22,12 +21,11 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.speedBar->setMinimum(0);
     ui.speedBar->setFormat("paused");
     ui.speedBar->setValue(0);
-
-    // labels
     
     // plot
     ui.qwtPlot->enableAxis(QwtPlot::yLeft, false);
     ui.qwtPlot->enableAxis(QwtPlot::xBottom, false);
+    ui.qwtPlot->setFixedHeight(30);
     
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
@@ -60,7 +58,13 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.progressSlider->setMaximum(replayHandler->getMaxIndex());
     
     // labels
-    ui.label_sample_count->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
+    ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
+    
+    // plot
+    QwtPlotCurve *curve = new QwtPlotCurve("Data");
+    ReplayGraph graph = replayHandler->getGraph();
+    curve->setData(QVector<double>::fromStdVector(graph.xData), QVector<double>::fromStdVector(graph.yData));
+    curve->attach(ui.qwtPlot);
     
     // window title
     if(argc > 1) 
@@ -68,20 +72,20 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
 }
 
 
-void ReplayGui::updateTaskNames()
+void ReplayGui::updateTaskView()
 {
     for(const std::pair<std::string, LogTask*>& cur : replayHandler->getAllLogTasks())
     {        
-        std::string taskName = cur.first;
+        QStandardItem *task = new QStandardItem(QString(cur.first.c_str()));    
+        
         for(const std::string& portName : cur.second->getTaskContext()->ports()->getPortNames())
         {
-            taskNameList->append(QString((taskName + "::" + portName).c_str()));
+            task->appendRow(new QStandardItem(QString(portName.c_str())));
+            //portTypes.append(new QStandardItem(QString(cur.second->getTaskContext()->getPort(portName)->getTypeInfo()->getTypeName().c_str())));
         }
-       
+     
+        tasksModel->appendRow(task);
     }
-
-    taskNameListModel->setStringList(*taskNameList);
-    
 }
 
 

@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     gui.initReplayHandler(argc, argv);
         
     
-    gui.updateTaskNames();
+    gui.updateTaskView();
     gui.show();
     return a.exec();
 }
