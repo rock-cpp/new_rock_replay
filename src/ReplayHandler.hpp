@@ -10,9 +10,15 @@
 
 #include "LogTask.hpp"
 
+struct ReplayGraph
+{
+    std::vector<double> xData;
+    std::vector<double> yData;
+};
+
 class ReplayHandler
 {
-  
+    
 public:
     ReplayHandler(int argc, char** argv);
     ~ReplayHandler();
@@ -27,6 +33,9 @@ public:
     void setSampleIndex(uint index);
     
     void setReplayFactor(double factor);
+       
+    const ReplayGraph getGraph() const;
+    
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
     inline const std::string getCurTimeStamp() { return curTimeStamp; };

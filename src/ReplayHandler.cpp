@@ -131,6 +131,35 @@ void ReplayHandler::init()
 }
 
 
+const ReplayGraph ReplayHandler::getGraph() const
+{
+    int windowSize = 20;
+    int64_t offset = getTimeStamp(0).microseconds;
+    std::vector<int64_t> timestamps;
+    std::vector<double> x, y;
+    for(size_t i = 0; i < multiIndex->getSize(); i++)
+    {
+        timestamps.push_back(getTimeStamp(i).microseconds - offset);
+    }
+    
+    int numWindows = ((timestamps.size() / windowSize) + 0.5);
+    
+    for(int i = windowSize; i < timestamps.size(); i++)
+    {
+        std::vector<int64_t> buf(timestamps.begin() + i - windowSize, timestamps.begin() + i);
+        double mean = std::accumulate(buf.begin(), buf.end(), 0.0) / buf.size();
+        double variance = 0;
+        std::for_each(buf.begin(), buf.end(), [&](int64_t &val){ variance += std::pow(mean - val, 2); });
+        variance /= buf.size();
+        y.push_back(std::sqrt(variance));   
+        x.push_back(i);
+    }
+
+    return ReplayGraph {x,y};
+}
+
+
+
 void ReplayHandler::replaySample(size_t index) const
 {
     try 
