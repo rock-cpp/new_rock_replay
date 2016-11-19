@@ -32,12 +32,12 @@ private:
     
     // timers
     QTimer *statusUpdateTimer;
+    QTimer *checkFinishedTimer;
     
     
     double sliderToBox(int val);
     int boxToSlider(double val);
-   
-    
+
     
 public slots:
     void togglePlay();
@@ -45,6 +45,7 @@ public slots:
     void statusUpdate();
     void setSpeedBox();
     void setSpeedSlider();
+    void handleRestart();
     
 };
 

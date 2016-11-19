@@ -16,6 +16,8 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     // timer
     statusUpdateTimer = new QTimer();
     statusUpdateTimer->setInterval(10);
+    checkFinishedTimer = new QTimer();
+    checkFinishedTimer->setInterval(10);
     
     // speed bar
     ui.speedBar->setMinimum(0);
@@ -27,6 +29,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.qwtPlot->enableAxis(QwtPlot::xBottom, false);
     ui.qwtPlot->setFixedHeight(30);
     
+    
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
@@ -37,7 +40,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(statusUpdateTimer, SIGNAL(timeout()), this, SLOT(statusUpdate()));
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
     QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
-    
+    QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     
 }
 
@@ -67,8 +70,10 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     curve->attach(ui.qwtPlot);
     
     // window title
-    if(argc > 1) 
+    if(argc == 2) 
         this->setWindowTitle(QString(argv[1]));
+    else if(argc > 2)
+        this->setWindowTitle(QString("Multi Logfile Replay"));
 }
 
 
@@ -124,8 +129,6 @@ double ReplayGui::sliderToBox(int val)
 
 
 
-
-
 // #######################################
 // ######### SLOT IMPLEMENTATION #########
 // #######################################
@@ -136,19 +139,38 @@ void ReplayGui::togglePlay()
     if(ui.playButton->isChecked())
     {
         ui.playButton->setIcon(pauseIcon);
-        ui.playButton->setChecked(true);
         ui.speedBar->setFormat("%p%");
         statusUpdateTimer->start();
+        checkFinishedTimer->start();
     }
     else
     {
         ui.playButton->setIcon(playIcon);
         ui.playButton->setChecked(false);
         statusUpdateTimer->stop();
+        checkFinishedTimer->stop();
         ui.speedBar->setValue(0);
         ui.speedBar->setFormat("paused");
     }
 }
+
+
+void ReplayGui::handleRestart()
+{
+    if(replayHandler->hasFinished())
+    {
+        checkFinishedTimer->stop();
+        stopPlay();
+        replayHandler->setReplayFactor(ui.speedBox->value());
+        statusUpdate();
+        
+        if(ui.repeatButton->isChecked())
+        {
+            std::cout << "checked repeat" << std::endl;
+        }    
+    }
+}
+
 
 
 void ReplayGui::statusUpdate()
@@ -157,7 +179,7 @@ void ReplayGui::statusUpdate()
     ui.curSampleNum->setText(QString::number(replayHandler->getCurIndex()));
     ui.curTimestamp->setText(replayHandler->getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler->getCurSamplePortName().c_str());
-    ui.progressSlider->setSliderPosition(replayHandler->getCurIndex());
+    ui.progressSlider->setSliderPosition(replayHandler->getCurIndex());        
 }
 
 void ReplayGui::stopPlay()
@@ -168,7 +190,6 @@ void ReplayGui::stopPlay()
     statusUpdateTimer->stop();
     ui.speedBar->setValue(0);
     ui.speedBar->setFormat("paused");
-    statusUpdate();
 }
 
 
