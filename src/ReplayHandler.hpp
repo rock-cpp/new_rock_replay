@@ -20,7 +20,7 @@ class ReplayHandler
 {
     
 public:
-    ReplayHandler(int argc, char** argv);
+    ReplayHandler(int argc, char** argv, uint windowSize = 20);
     ~ReplayHandler();
     
     void replaySamples();
@@ -46,6 +46,8 @@ public:
     inline const double getCurrentSpeed() { return currentSpeed; };
     inline const std::vector<std::string> getFileNames() { return filenames; };
     inline const bool isValid() { return valid; };
+    inline const bool hasFinished() { return finished; };
+    
     
 private:  
     bool restartReplay;
@@ -54,8 +56,10 @@ private:
     mutable std::string curTimeStamp;
     mutable std::string curSamplePortName;
     uint curIndex;
+    uint maxIndex;
     bool finished;
     bool valid;
+    uint windowSize;
     
     bool play;
     boost::thread *replayThread;

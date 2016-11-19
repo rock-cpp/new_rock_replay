@@ -2,7 +2,8 @@
 #include "orocos_cpp/TypeRegistry.hpp"
 
 
-ReplayHandler::ReplayHandler(int argc, char** argv)
+ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
+    : windowSize(windowSize)
 {
     RTT::corba::TaskContextServer::InitOrb(argc, argv);
 
@@ -127,13 +128,13 @@ void ReplayHandler::init()
     curSamplePortName = "";
     finished = false;
     play = false;
+    maxIndex = multiIndex->getSize() - 1;
     replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
 }
 
 
 const ReplayGraph ReplayHandler::getGraph() const
 {
-    int windowSize = 20;
     int64_t offset = getTimeStamp(0).microseconds;
     std::vector<int64_t> timestamps;
     std::vector<double> x, y;
@@ -142,18 +143,24 @@ const ReplayGraph ReplayHandler::getGraph() const
         timestamps.push_back(getTimeStamp(i).microseconds - offset);
     }
     
-    int numWindows = ((timestamps.size() / windowSize) + 0.5);
-    
-    for(int i = windowSize; i < timestamps.size(); i++)
+    double maxStd = 0;
+    for(uint i = windowSize; i < timestamps.size(); i++)
     {
         std::vector<int64_t> buf(timestamps.begin() + i - windowSize, timestamps.begin() + i);
         double mean = std::accumulate(buf.begin(), buf.end(), 0.0) / buf.size();
         double variance = 0;
         std::for_each(buf.begin(), buf.end(), [&](int64_t &val){ variance += std::pow(mean - val, 2); });
         variance /= buf.size();
-        y.push_back(std::sqrt(variance));   
+        double stdDeviation = std::sqrt(variance);
+        y.push_back(stdDeviation);   
         x.push_back(i);
+        
+        if(stdDeviation > maxStd)
+            maxStd = stdDeviation;
     }
+    
+    for(int i = 0; i < y.size(); i++)
+        y.at(i) = 1 - y.at(i) / maxStd;
 
     return ReplayGraph {x,y};
 }
@@ -166,7 +173,6 @@ void ReplayHandler::replaySample(size_t index) const
     {
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
-//         std::cout << "Gidx is " << globalStreamIndex << std::endl;
         curSamplePortName = inputSt->getName();
         streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
     } 
@@ -267,7 +273,10 @@ void ReplayHandler::replaySamples()
         else // tosleep < 0
         {
             currentSpeed = logTimeSinceStart.toSeconds() / systemTimeSinceStart.toSeconds();   
-        }           
+        }      
+        
+        if(curIndex == maxIndex)
+            finished = true;
     }
 
 }
@@ -316,12 +325,15 @@ void ReplayHandler::toggle()
     }
     else
     {
-        if(!play) {
+        if(!play)
+        {
             play = true;
             restartReplay = true;
             cond.notify_one();
             std::cout << "Starting replay" << std::endl;
-        } else {
+        } 
+        else
+        {
             play = false;
             std::cout << "Stopping replay" << std::endl;
         }
