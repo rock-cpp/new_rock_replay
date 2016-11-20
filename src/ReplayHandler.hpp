@@ -25,7 +25,7 @@ public:
     
     void replaySamples();
     
-    void toggle(bool restart = false);
+    void toggle();
     void stop();
     
     void next();

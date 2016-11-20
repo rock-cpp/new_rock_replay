@@ -48,6 +48,7 @@ public slots:
     void handleRestart();
     void forward();
     void backward();
+    void progressSliderUpdate();
     
 };
 

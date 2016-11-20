@@ -325,9 +325,11 @@ void ReplayHandler::previous()
 void ReplayHandler::setSampleIndex(uint index)
 {
     curIndex = index;
+    replaySample(curIndex, true); // do a dry run for metadata update
+    curTimeStamp = getTimeStamp(curIndex).toString();
 }
 
-void ReplayHandler::toggle(bool restart)
+void ReplayHandler::toggle()
 {
     if(!valid)
     {
@@ -341,11 +343,6 @@ void ReplayHandler::toggle(bool restart)
             restartReplay = true;
             cond.notify_one();
             std::cout << "Starting replay" << std::endl;
-            
-            if(restart)
-            {
-                curIndex = 0;
-            }
             
         } 
         else

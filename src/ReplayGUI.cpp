@@ -42,6 +42,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(statusUpdateTimer, SIGNAL(timeout()), this, SLOT(statusUpdate()));
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
     QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
+    QObject::connect(ui.progressSlider, SIGNAL(sliderReleased()), this, SLOT(progressSliderUpdate()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     
 }
@@ -193,6 +194,7 @@ void ReplayGui::stopPlay()
     statusUpdateTimer->stop();
     ui.speedBar->setValue(0);
     ui.speedBar->setFormat("paused");
+    replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
 }
 
 
@@ -223,5 +225,10 @@ void ReplayGui::forward()
     statusUpdate();
 }
 
+void ReplayGui::progressSliderUpdate()
+{
+    replayHandler->setSampleIndex(ui.progressSlider->value());
+    statusUpdate();
+}
 
 
