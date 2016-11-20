@@ -167,14 +167,15 @@ const ReplayGraph ReplayHandler::getGraph() const
 
 
 
-void ReplayHandler::replaySample(size_t index) const
+void ReplayHandler::replaySample(size_t index, bool dryRun) const
 {
     try 
     {
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
         curSamplePortName = inputSt->getName();
-        streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
+        if(!dryRun)
+            streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
     } 
     catch(...)
     {
@@ -192,7 +193,7 @@ void ReplayHandler::replaySamples()
     size_t allSamples = multiIndex->getSize();
     
     restartReplay = true;
-
+    
     base::Time lastStamp;
     base::Time curStamp;
     base::Time toSleep;
@@ -303,18 +304,27 @@ void ReplayHandler::setReplayFactor(double factor)
 
 void ReplayHandler::next()
 {
-
+    if(curIndex < maxIndex)
+    {
+        replaySample(++curIndex, true);
+        curTimeStamp = getTimeStamp(curIndex).toString();
+    }
+    
 }
 
 void ReplayHandler::previous()
 {
-
+    if(curIndex > 0)
+    {
+        replaySample(--curIndex, true);
+        curTimeStamp = getTimeStamp(curIndex).toString();
+    }
 }
 
 
 void ReplayHandler::setSampleIndex(uint index)
 {
-
+    curIndex = index;
 }
 
 void ReplayHandler::toggle()

@@ -37,6 +37,8 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
     QObject::connect(ui.stopButton, SIGNAL(clicked()), this, SLOT(stopPlay()));
+    QObject::connect(ui.forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
+    QObject::connect(ui.backwardButton, SIGNAL(clicked()), this, SLOT(backward()));
     QObject::connect(statusUpdateTimer, SIGNAL(timeout()), this, SLOT(statusUpdate()));
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
     QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
@@ -207,5 +209,18 @@ void ReplayGui::setSpeedSlider()
     replayHandler->setReplayFactor(speed);
     ui.speedBox->setValue(speed);
 }
+
+void ReplayGui::backward()
+{
+    replayHandler->previous();
+    statusUpdate();
+}
+
+void ReplayGui::forward()
+{
+    replayHandler->next();
+    statusUpdate();
+}
+
 
 

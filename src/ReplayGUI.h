@@ -46,6 +46,8 @@ public slots:
     void setSpeedBox();
     void setSpeedSlider();
     void handleRestart();
+    void forward();
+    void backward();
     
 };
 

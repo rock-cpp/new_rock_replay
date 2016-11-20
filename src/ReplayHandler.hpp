@@ -43,7 +43,7 @@ public:
     inline const uint getCurIndex() { return curIndex; };
     inline const size_t getMaxIndex() { return multiIndex->getSize(); };
     inline const double getReplayFactor() { return replayFactor; };
-    inline const double getCurrentSpeed() { return currentSpeed; };
+    inline const double getCurrentSpeed() { return play ? currentSpeed : 0; };
     inline const std::vector<std::string> getFileNames() { return filenames; };
     inline const bool isValid() { return valid; };
     inline const bool hasFinished() { return finished; };
@@ -71,7 +71,7 @@ private:
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
     
-    void replaySample(size_t index) const;
+    void replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex) const;
     void init();
 };
