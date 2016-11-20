@@ -130,23 +130,36 @@ void ReplayHandler::init()
     play = false;
     maxIndex = multiIndex->getSize() - 1;
     replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
+    
+    // initial graph building and timestamp buffer allocation
+    if(!graph.get())
+        buildGraph();
+}
+
+base::Time ReplayHandler::extractTimeFromStream(size_t index)
+{
+    pocolog_cpp::Index &idx = multiIndex->getSampleStream(index)->getFileIndex();
+    return idx.getSampleTime(multiIndex->getPosInStream(index));
 }
 
 
-const ReplayGraph ReplayHandler::getGraph() const
+
+void ReplayHandler::buildGraph()
 {
-    int64_t offset = getTimeStamp(0).microseconds;
-    std::vector<int64_t> timestamps;
+    int64_t offset = extractTimeFromStream(0).toMicroseconds();
     std::vector<double> x, y;
+    std::vector<int64_t> unbiasedTimestamps; // buffer for stddev calculation
     for(size_t i = 0; i < multiIndex->getSize(); i++)
     {
-        timestamps.push_back(getTimeStamp(i).microseconds - offset);
+        base::Time curTime = extractTimeFromStream(i);
+        timestamps.push_back(curTime);
+        unbiasedTimestamps.push_back(curTime.microseconds - offset);
     }
     
     double maxStd = 0;
-    for(uint i = windowSize; i < timestamps.size(); i++)
+    for(uint i = windowSize; i < unbiasedTimestamps.size(); i++)
     {
-        std::vector<int64_t> buf(timestamps.begin() + i - windowSize, timestamps.begin() + i);
+        std::vector<int64_t> buf(unbiasedTimestamps.begin() + i - windowSize, unbiasedTimestamps.begin() + i);
         double mean = std::accumulate(buf.begin(), buf.end(), 0.0) / buf.size();
         double variance = 0;
         std::for_each(buf.begin(), buf.end(), [&](int64_t &val){ variance += std::pow(mean - val, 2); });
@@ -162,7 +175,9 @@ const ReplayGraph ReplayHandler::getGraph() const
     for(int i = 0; i < y.size(); i++)
         y.at(i) = 1 - y.at(i) / maxStd;
 
-    return ReplayGraph {x,y};
+    graph = std::make_shared<ReplayGraph>();
+    graph->xData = x;
+    graph->yData = y;
 }
 
 
@@ -284,8 +299,7 @@ void ReplayHandler::replaySamples()
 
 const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
 {    
-    pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalIndex)->getFileIndex();
-    return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));;
+    return timestamps.at(globalIndex);
 }
 
 void ReplayHandler::stop()

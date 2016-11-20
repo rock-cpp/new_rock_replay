@@ -33,8 +33,6 @@ public:
     void setSampleIndex(uint index);
     
     void setReplayFactor(double factor);
-       
-    const ReplayGraph getGraph() const;
     
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
@@ -47,6 +45,7 @@ public:
     inline const std::vector<std::string> getFileNames() { return filenames; };
     inline const bool isValid() { return valid; };
     inline const bool hasFinished() { return finished; };
+    inline const std::shared_ptr<ReplayGraph> getGraph() { return graph; };
     
     
 private:  
@@ -71,6 +70,11 @@ private:
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
     
+    std::shared_ptr<ReplayGraph> graph;
+    std::vector<base::Time> timestamps;
+    
+    base::Time extractTimeFromStream(size_t index);
+    void buildGraph();
     void replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex) const;
     void init();
