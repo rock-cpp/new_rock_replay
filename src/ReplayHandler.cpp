@@ -179,7 +179,7 @@ void ReplayHandler::replaySample(size_t index, bool dryRun) const
     } 
     catch(...)
     {
-        std::cout << "Warning: ignoring corrupt sample: " << index << "/" << multiIndex->getSize() << std::endl;
+        std::cout << "Warning: ignoring corrupt sample: " << index << "/" << maxIndex << std::endl;
     }
 }
 
@@ -327,7 +327,7 @@ void ReplayHandler::setSampleIndex(uint index)
     curIndex = index;
 }
 
-void ReplayHandler::toggle()
+void ReplayHandler::toggle(bool restart)
 {
     if(!valid)
     {
@@ -341,6 +341,12 @@ void ReplayHandler::toggle()
             restartReplay = true;
             cond.notify_one();
             std::cout << "Starting replay" << std::endl;
+            
+            if(restart)
+            {
+                curIndex = 0;
+            }
+            
         } 
         else
         {

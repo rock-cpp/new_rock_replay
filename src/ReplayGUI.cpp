@@ -168,7 +168,8 @@ void ReplayGui::handleRestart()
         
         if(ui.repeatButton->isChecked())
         {
-            std::cout << "checked repeat" << std::endl;
+            ui.playButton->setChecked(true);
+            togglePlay();
         }    
     }
 }
