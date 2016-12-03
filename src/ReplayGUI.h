@@ -9,26 +9,20 @@
 
 #include "ui_main.h"
 
-class TreeViewItem : public QStandardItem
+class TreeViewRootItem : public QStandardItem
 {
 private:
     LogTask *logTask;
-    std::string portName;
     
 public:
-    TreeViewItem(LogTask *logTask, const std::string &portName);
+    TreeViewRootItem(LogTask *logTask, const std::string &taskName);
     
     LogTask *getLogTask()
     {
         return logTask;
     }
     
-    const std::string getPortName()
-    {
-        return portName;
-    }
-    
-    ~TreeViewItem()
+    ~TreeViewRootItem()
     {
     }
 };
@@ -73,6 +67,7 @@ public slots:
     void forward();
     void backward();
     void progressSliderUpdate();
+    void handleProgressSliderPressed();
     void handleCheckedChanged(QStandardItem *item);
 };
 

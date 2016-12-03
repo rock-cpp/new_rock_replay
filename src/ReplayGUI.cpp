@@ -2,26 +2,26 @@
 #include <qwt_abstract_scale_draw.h>
 #include <qwt_plot_curve.h>
 
-TreeViewItem::TreeViewItem(LogTask *logTask, const std::string &portName)
-    : QStandardItem(QString(portName.c_str())),
-      logTask(logTask),
-      portName(portName)
+TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName)
+    : QStandardItem(QString(taskName.c_str())),
+      logTask(logTask)
 {
     
 }
 
 void ReplayGui::handleCheckedChanged(QStandardItem *item)
 {
-    TreeViewItem *treeViewItem = dynamic_cast<TreeViewItem*>(item);
-    if (!treeViewItem)
+    TreeViewRootItem *taskItem = nullptr;
+    if (!item->parent() || !(taskItem = dynamic_cast<TreeViewRootItem*>(item->parent())))
     {
         return;
     }
     
-    const QModelIndex index = tasksModel->indexFromItem(treeViewItem);
+    const QModelIndex index = tasksModel->indexFromItem(item);
     QItemSelectionModel *selModel = ui.taskNameList->selectionModel();
-    treeViewItem->getLogTask()->activateLoggingForPort(treeViewItem->getPortName(), treeViewItem->checkState() == Qt::Checked);
-    selModel->select(QItemSelection(index, index), treeViewItem->checkState() == Qt::Checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
+    const std::string portName = item->text().toStdString();
+    taskItem->getLogTask()->activateLoggingForPort(portName, item->checkState() == Qt::Checked);
+    selModel->select(QItemSelection(index, index), item->checkState() == Qt::Checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
 }
 
 ReplayGui::ReplayGui(QMainWindow *parent)
@@ -65,6 +65,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
     QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
     QObject::connect(ui.progressSlider, SIGNAL(sliderReleased()), this, SLOT(progressSliderUpdate()));
+    QObject::connect(ui.progressSlider, SIGNAL(sliderPressed()), this, SLOT(handleProgressSliderPressed()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     
     QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleCheckedChanged(QStandardItem *)));
@@ -89,6 +90,15 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     // labels
     ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
     
+    QPalette *replayInfoPalette = new QPalette();
+    replayInfoPalette->setColor(QPalette::Base,Qt::lightGray);
+    ui.curPortName->setPalette(*replayInfoPalette);
+    ui.curPortName->setReadOnly(true);
+    ui.curTimestamp->setPalette(*replayInfoPalette);
+    ui.curTimestamp->setReadOnly(true);
+    ui.curSampleNum->setPalette(*replayInfoPalette);
+    ui.curSampleNum->setReadOnly(true);
+    
     // plot
     QwtPlotCurve *curve = new QwtPlotCurve("Data");
     std::shared_ptr<ReplayGraph> graph = replayHandler->getGraph();
@@ -107,12 +117,12 @@ void ReplayGui::updateTaskView()
 {
     for(const std::pair<std::string, LogTask*>& cur : replayHandler->getAllLogTasks())
     {        
-        QStandardItem *task = new QStandardItem(QString(cur.first.c_str()));
+        TreeViewRootItem *task = new TreeViewRootItem(cur.second, cur.first);
         task->setCheckable(false);
         
         for(const std::string& portName : cur.second->getTaskContext()->ports()->getPortNames())
         {
-            TreeViewItem *port = new TreeViewItem(cur.second, portName);
+            QStandardItem *port = new QStandardItem(portName.c_str());
             port->setCheckable(true);
             port->setData(Qt::Checked, Qt::CheckStateRole);
             task->appendRow(port);
@@ -204,7 +214,7 @@ void ReplayGui::handleRestart()
 
 void ReplayGui::statusUpdate()
 {
-    ui.speedBar->setValue(replayHandler->getCurrentSpeed() * ui.speedBar->maximum());
+    ui.speedBar->setValue(round(replayHandler->getCurrentSpeed() * ui.speedBar->maximum()));
     ui.curSampleNum->setText(QString::number(replayHandler->getCurIndex()));
     ui.curTimestamp->setText(replayHandler->getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler->getCurSamplePortName().c_str());
@@ -251,9 +261,12 @@ void ReplayGui::forward()
 }
 
 void ReplayGui::progressSliderUpdate()
-{
+{ 
     replayHandler->setSampleIndex(ui.progressSlider->value());
     statusUpdate();
 }
 
-
+void ReplayGui::handleProgressSliderPressed()
+{
+    stopPlay();
+}
