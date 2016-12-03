@@ -75,7 +75,7 @@ private:
     
     base::Time extractTimeFromStream(size_t index);
     void buildGraph();
-    void replaySample(size_t index, bool dryRun = false) const;
+    bool replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex) const;
     void init();
 };

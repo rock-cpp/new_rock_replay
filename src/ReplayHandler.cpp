@@ -182,24 +182,25 @@ void ReplayHandler::buildGraph()
 
 
 
-void ReplayHandler::replaySample(size_t index, bool dryRun) const
+bool ReplayHandler::replaySample(size_t index, bool dryRun) const
 {
     try 
     {
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
-        if (!dryRun)
+        if (dryRun || (!dryRun && streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index))))
         {
-            if (streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)))
-            {
-                curSamplePortName = inputSt->getName();
-            }
-        }   
-    } 
+            curSamplePortName = inputSt->getName();
+        }
+        
+        return true;
+    }
     catch(...)
     {
-        std::cout << "Warning: ignoring corrupt sample: " << index << "/" << maxIndex << std::endl;
+        std::cout << "Warning: ignoring corrupt sample: " << index << "/" << maxIndex << std::endl;     
     }
+    
+    return false;
 }
 
 void ReplayHandler::replaySamples()
@@ -252,7 +253,11 @@ void ReplayHandler::replaySamples()
         //TODO check if chronological ordering is right
         //TODO if logging for port is not selected, skip cur index
         // (allow higher replayFactor)
-        replaySample(curIndex);
+        if (!replaySample(curIndex))
+        {
+            curIndex++;
+            continue;
+        }
 
         lastStamp = curStamp;
 
