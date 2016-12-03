@@ -280,13 +280,13 @@ void ReplayHandler::replaySamples()
         base::Time curTime = base::Time::now();
         
         //hm, factor... should it not be * replayFactor then ?
-        base::Time logTimeSinceStart = (curStamp - logPlayStartTime) / replayFactor;
+        base::Time logTimeSinceStart = base::Time::fromMicroseconds((curStamp.microseconds - logPlayStartTime.microseconds) / replayFactor);
         base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
         toSleep = logTimeSinceStart - systemTimeSinceStart;
-        
-//         std::cout << "Log time since start " << logTimeSinceStart << std::endl;
-//         std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
-//         std::cout << "To Sleep " << toSleep.microseconds << std::endl;
+
+        // std::cout << "Log time since start " << logTimeSinceStart << std::endl;
+        // std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
+        // std::cout << "To Sleep " << toSleep.microseconds << std::endl;
         
         if(toSleep.microseconds > 0)
         {
@@ -323,6 +323,11 @@ void ReplayHandler::stop()
 void ReplayHandler::setReplayFactor(double factor)
 {
     this->replayFactor = factor;
+    if (this->replayFactor < minReplayFactor)
+    {
+        this->replayFactor = minReplayFactor;
+    }
+    
     restartReplay = true;
 }
 

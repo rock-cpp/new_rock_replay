@@ -51,6 +51,7 @@ public:
 private:  
     bool restartReplay;
     double replayFactor;
+    const double minReplayFactor = 1e-5;
     mutable double currentSpeed;
     mutable std::string curTimeStamp;
     mutable std::string curSamplePortName;
