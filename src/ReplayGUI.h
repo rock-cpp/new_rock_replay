@@ -9,6 +9,30 @@
 
 #include "ui_main.h"
 
+class TreeViewItem : public QStandardItem
+{
+private:
+    LogTask *logTask;
+    std::string portName;
+    
+public:
+    TreeViewItem(LogTask *logTask, const std::string &portName);
+    
+    LogTask *getLogTask()
+    {
+        return logTask;
+    }
+    
+    const std::string getPortName()
+    {
+        return portName;
+    }
+    
+    ~TreeViewItem()
+    {
+    }
+};
+
 class ReplayGui : public QMainWindow
 {
     Q_OBJECT
@@ -49,7 +73,7 @@ public slots:
     void forward();
     void backward();
     void progressSliderUpdate();
-    
+    void handleCheckedChanged(QStandardItem *item);
 };
 
 #endif // REPLAY_GUI_H

@@ -14,8 +14,8 @@ public:
     RTT::base::DataSourceBase::shared_ptr sample;
     orogen_transports::TypelibMarshallerBase::Handle *transportHandle;
     RTT::base::OutputPortInterface *port;
+    bool loggingActive;
 };
-
 
 LogTask::LogTask(const std::string& name)
 {
@@ -23,6 +23,15 @@ LogTask::LogTask(const std::string& name)
 
     RTT::corba::TaskContextServer::Create( task );
     RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
+}
+
+void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
+{
+    if (name2handle.find(portName) != name2handle.end())
+    {
+        PortHandle *handle = name2handle[portName];
+        handle->loggingActive = activate;
+    }
 }
 
 bool LogTask::createReplayPort(const std::string& portname, const std::string& typestr, PortHandle &handle)
@@ -67,6 +76,7 @@ bool LogTask::createReplayPort(const std::string& portname, const std::string& t
         handle.transportHandle = transport->createSample();
         handle.transport = transport;
         handle.sample = transport->getDataSource(handle.transportHandle);
+        handle.loggingActive = true;
     } catch ( RTT::internal::bad_assignment& ba ) {
         return false;
     }
@@ -101,11 +111,12 @@ bool LogTask::addStream(const pocolog_cpp::InputDataStream& stream)
     std::cout << "Created port " << idx << " name " << portName << std::endl;
     
     handles[idx] = handle;
+    name2handle[portName] = handle;
     
     return true;
 }
 
-void LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr)
+bool LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr)
 {
     size_t idx = stream.getIndex();
 //     std::cout << "TaskName is " << task->getName() << " streamName " << stream.getName() << " idx " << idx << std::endl; 
@@ -116,23 +127,31 @@ void LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr
     }
 
     PortHandle &handle(*handles[idx]);
+    if (!handle.loggingActive)
+    {
+        return false;
+    }
+    
     //optimization, do nothing if nobody is listening to this port
     if(!handle.port->connected())
-        return;
+    {
+        return false;
+    }
     
     std::vector<uint8_t> data;
     if(!stream.getSampleData(data, sampleNr))
     {
         std::cout << "Warning, could not replay sample: " << stream.getName() << " " << sampleNr <<  std::endl;
-        return;
+        return false;
     }
     
     try {
         handle.transport->unmarshal(data, handle.transportHandle);
     } catch (...) {
         std::cout << "caught marshall error.." << std::endl;
-        return;
+        return false;
     }
 
     handle.port->write(handle.sample);
+    return true;
 }

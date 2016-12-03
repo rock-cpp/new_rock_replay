@@ -188,9 +188,13 @@ void ReplayHandler::replaySample(size_t index, bool dryRun) const
     {
         size_t globalStreamIndex = multiIndex->getGlobalStreamIdx(index);
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(multiIndex->getSampleStream(index));
-        curSamplePortName = inputSt->getName();
-        if(!dryRun)
-            streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)); 
+        if (!dryRun)
+        {
+            if (streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index)))
+            {
+                curSamplePortName = inputSt->getName();
+            }
+        }   
     } 
     catch(...)
     {
@@ -246,6 +250,8 @@ void ReplayHandler::replaySamples()
         }
 
         //TODO check if chronological ordering is right
+        //TODO if logging for port is not selected, skip cur index
+        // (allow higher replayFactor)
         replaySample(curIndex);
 
         lastStamp = curStamp;
@@ -257,7 +263,7 @@ void ReplayHandler::replaySamples()
             continue;
         }
       
-        curStamp = getTimeStamp(curIndex);;
+        curStamp = getTimeStamp(curIndex);
         curTimeStamp = curStamp.toString();
         
         if(lastStamp > curStamp)
@@ -366,10 +372,3 @@ void ReplayHandler::toggle()
         }
     }
 }
-
-
-
-
-
-
-

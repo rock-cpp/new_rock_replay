@@ -2,6 +2,28 @@
 #include <qwt_abstract_scale_draw.h>
 #include <qwt_plot_curve.h>
 
+TreeViewItem::TreeViewItem(LogTask *logTask, const std::string &portName)
+    : QStandardItem(QString(portName.c_str())),
+      logTask(logTask),
+      portName(portName)
+{
+    
+}
+
+void ReplayGui::handleCheckedChanged(QStandardItem *item)
+{
+    TreeViewItem *treeViewItem = dynamic_cast<TreeViewItem*>(item);
+    if (!treeViewItem)
+    {
+        return;
+    }
+    
+    const QModelIndex index = tasksModel->indexFromItem(treeViewItem);
+    QItemSelectionModel *selModel = ui.taskNameList->selectionModel();
+    treeViewItem->getLogTask()->activateLoggingForPort(treeViewItem->getPortName(), treeViewItem->checkState() == Qt::Checked);
+    selModel->select(QItemSelection(index, index), treeViewItem->checkState() == Qt::Checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
+}
+
 ReplayGui::ReplayGui(QMainWindow *parent)
     : QMainWindow(parent)
 {
@@ -45,6 +67,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.progressSlider, SIGNAL(sliderReleased()), this, SLOT(progressSliderUpdate()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     
+    QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleCheckedChanged(QStandardItem *)));
 }
 
 ReplayGui::~ReplayGui()
@@ -84,19 +107,21 @@ void ReplayGui::updateTaskView()
 {
     for(const std::pair<std::string, LogTask*>& cur : replayHandler->getAllLogTasks())
     {        
-        QStandardItem *task = new QStandardItem(QString(cur.first.c_str()));    
+        QStandardItem *task = new QStandardItem(QString(cur.first.c_str()));
+        task->setCheckable(false);
         
         for(const std::string& portName : cur.second->getTaskContext()->ports()->getPortNames())
         {
-            task->appendRow(new QStandardItem(QString(portName.c_str())));
+            TreeViewItem *port = new TreeViewItem(cur.second, portName);
+            port->setCheckable(true);
+            port->setData(Qt::Checked, Qt::CheckStateRole);
+            task->appendRow(port);
             //portTypes.append(new QStandardItem(QString(cur.second->getTaskContext()->getPort(portName)->getTypeInfo()->getTypeName().c_str())));
         }
      
         tasksModel->appendRow(task);
     }
 }
-
-
 
 int ReplayGui::boxToSlider(double val)
 {
