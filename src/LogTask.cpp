@@ -135,7 +135,7 @@ bool LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr
     //optimization, do nothing if nobody is listening to this port
     if(!handle.port->connected())
     {
-        return false;
+        return true;
     }
     
     std::vector<uint8_t> data;
