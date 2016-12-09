@@ -56,6 +56,8 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
     
+    stoppedBySlider = false;
+    
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
     QObject::connect(ui.stopButton, SIGNAL(clicked()), this, SLOT(stopPlay()));
@@ -189,6 +191,7 @@ void ReplayGui::togglePlay()
         checkFinishedTimer->stop();
         ui.speedBar->setValue(0);
         ui.speedBar->setFormat("paused");
+        stoppedBySlider = false;
     }
 }
 
@@ -201,6 +204,7 @@ void ReplayGui::handleRestart()
         stopPlay();
         replayHandler->setReplayFactor(ui.speedBox->value());
         statusUpdate();
+        stoppedBySlider = false;
         
         if(ui.repeatButton->isChecked())
         {
@@ -229,6 +233,7 @@ void ReplayGui::stopPlay()
     statusUpdateTimer->stop();
     ui.speedBar->setValue(0);
     ui.speedBar->setFormat("paused");
+    statusUpdate();
     replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
 }
 
@@ -238,7 +243,6 @@ void ReplayGui::setSpeedBox()
     double speed = ui.speedBox->value();
     replayHandler->setReplayFactor(speed);
     ui.speedSlider->setValue(boxToSlider(speed));
-    
 }
 
 void ReplayGui::setSpeedSlider()
@@ -264,9 +268,16 @@ void ReplayGui::progressSliderUpdate()
 { 
     replayHandler->setSampleIndex(ui.progressSlider->value());
     statusUpdate();
+    if(stoppedBySlider)
+    {
+        ui.playButton->setChecked(true);
+        togglePlay();
+        statusUpdateTimer->start();
+    }
 }
 
 void ReplayGui::handleProgressSliderPressed()
 {
+    stoppedBySlider = replayHandler->isPlaying();
     stopPlay();
 }

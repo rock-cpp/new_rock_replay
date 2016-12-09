@@ -55,6 +55,7 @@ private:
     
     double sliderToBox(int val);
     int boxToSlider(double val);
+    bool stoppedBySlider;
 
     
 public slots:
