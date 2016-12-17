@@ -27,6 +27,7 @@ find_library(QWT_LIBRARIES
         NAMES qwt qwt-qt4
 )
 
+set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/Qxt/lib/pkgconfig")
 
 QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
 
@@ -46,6 +47,7 @@ rock_executable(viz
         QtCore
         QtGui
         vizkit3d
+        QxtWidgets
     DEPS
         rock_replay
     UI

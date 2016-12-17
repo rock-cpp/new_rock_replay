@@ -1,6 +1,7 @@
 #include "ReplayGUI.h"
 #include <qwt_abstract_scale_draw.h>
 #include <qwt_plot_curve.h>
+#include <QxtSpanSlider>
 
 TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName)
     : QStandardItem(QString(taskName.c_str())),
@@ -51,6 +52,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.qwtPlot->enableAxis(QwtPlot::xBottom, false);
     ui.qwtPlot->setFixedHeight(30);
     
+    QxtSpanSlider *slider = new QxtSpanSlider(this);
     
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
