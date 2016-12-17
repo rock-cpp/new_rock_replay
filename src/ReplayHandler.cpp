@@ -359,6 +359,12 @@ void ReplayHandler::setSampleIndex(uint index)
     curTimeStamp = getTimeStamp(curIndex).toString();
 }
 
+void ReplayHandler::setMaxSampleIndex(uint index)
+{
+    maxIndex = index;
+}
+
+
 void ReplayHandler::toggle()
 {
     if(!valid)

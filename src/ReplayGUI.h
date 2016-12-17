@@ -56,6 +56,7 @@ private:
     double sliderToBox(int val);
     int boxToSlider(double val);
     bool stoppedBySlider;
+    int oldSpanSliderLower, oldSpanSliderUpper;
 
     
 public slots:
@@ -70,6 +71,7 @@ public slots:
     void progressSliderUpdate();
     void handleProgressSliderPressed();
     void handleCheckedChanged(QStandardItem *item);
+    void handleSpanSlider();
 };
 
 #endif // REPLAY_GUI_H

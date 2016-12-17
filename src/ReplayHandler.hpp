@@ -33,6 +33,7 @@ public:
     void setSampleIndex(uint index);
     
     void setReplayFactor(double factor);
+    void setMaxSampleIndex(uint index);
     
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };

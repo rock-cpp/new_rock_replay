@@ -52,7 +52,6 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.qwtPlot->enableAxis(QwtPlot::xBottom, false);
     ui.qwtPlot->setFixedHeight(30);
     
-    QxtSpanSlider *slider = new QxtSpanSlider(this);
     
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
@@ -71,6 +70,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.progressSlider, SIGNAL(sliderReleased()), this, SLOT(progressSliderUpdate()));
     QObject::connect(ui.progressSlider, SIGNAL(sliderPressed()), this, SLOT(handleProgressSliderPressed()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
+    QObject::connect(ui.intervalSlider, SIGNAL(sliderReleased()), this, SLOT(handleSpanSlider()));
     
     QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleCheckedChanged(QStandardItem *)));
 }
@@ -94,6 +94,14 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     // labels
     ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
     
+    // span slider
+    ui.intervalSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
+    ui.intervalSlider->setMaximum(replayHandler->getMaxIndex());
+    ui.intervalSlider->setSpan(0, replayHandler->getMaxIndex());
+    oldSpanSliderLower = 0;
+    oldSpanSliderUpper = replayHandler->getMaxIndex();
+    
+    
     QPalette *replayInfoPalette = new QPalette();
     replayInfoPalette->setColor(QPalette::Base,Qt::lightGray);
     ui.curPortName->setPalette(*replayInfoPalette);
@@ -108,7 +116,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     std::shared_ptr<ReplayGraph> graph = replayHandler->getGraph();
     std::vector<double> x = graph->xData;
     for(int i = 0; i < x.size(); i++)
-        x.at(i) += 500.0; // magic number atm
+        x.at(i) += 1000.0; // magic number atm
     
     curve->setData(QVector<double>::fromStdVector(x), QVector<double>::fromStdVector(graph->yData));
     curve->setData(QVector<double>::fromStdVector(graph->xData), QVector<double>::fromStdVector(graph->yData));
@@ -212,6 +220,8 @@ void ReplayGui::handleRestart()
         replayHandler->setReplayFactor(ui.speedBox->value());
         statusUpdate();
         stoppedBySlider = false;
+        replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
+        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
         
         if(ui.repeatButton->isChecked())
         {
@@ -240,8 +250,10 @@ void ReplayGui::stopPlay()
     statusUpdateTimer->stop();
     ui.speedBar->setValue(0);
     ui.speedBar->setFormat("paused");
-    statusUpdate();
     replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
+    replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition()); // ensure that old span is kept
+    replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
+    statusUpdate();
 }
 
 
@@ -288,3 +300,27 @@ void ReplayGui::handleProgressSliderPressed()
     stoppedBySlider = replayHandler->isPlaying();
     stopPlay();
 }
+
+void ReplayGui::handleSpanSlider()
+{
+    if(!ui.intervalSlider->isSliderDown() && oldSpanSliderLower != ui.intervalSlider->lowerPosition())  // necessary because qxt span slider has no lower/upper released signal
+    {
+        oldSpanSliderLower = ui.intervalSlider->lowerPosition();
+        stopPlay();
+        replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
+        ui.playButton->setChecked(true);
+        togglePlay();
+    }
+    
+    if(!ui.intervalSlider->isSliderDown() && oldSpanSliderUpper != ui.intervalSlider->upperPosition())
+    {
+        oldSpanSliderUpper = ui.intervalSlider->upperPosition();
+        
+        if(oldSpanSliderUpper > replayHandler->getCurIndex())  // we can't go back in time, so wait until one replay episode has finished
+            replayHandler->setMaxSampleIndex(oldSpanSliderUpper);
+    }
+}
+
+
+
+
