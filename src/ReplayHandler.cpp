@@ -207,7 +207,6 @@ void ReplayHandler::replaySamples()
 {   
     boost::unique_lock<boost::mutex> lock(mut);
     
-    std::cout << "Replaying all samples" << std::endl;
     base::Time start(base::Time::now()), lastExecute(base::Time::now());
     
     size_t allSamples = multiIndex->getSize();
@@ -231,7 +230,6 @@ void ReplayHandler::replaySamples()
             restartReplay = true;
         }
 
-//         std::cout << "Replaying Sample " << curIndex << std::endl;
         
         if(curIndex >= allSamples)
         {
@@ -378,13 +376,11 @@ void ReplayHandler::toggle()
             play = true;
             restartReplay = true;
             cond.notify_one();
-            std::cout << "Starting replay" << std::endl;
             
         } 
         else
         {
             play = false;
-            std::cout << "Stopping replay" << std::endl;
         }
     }
 }
