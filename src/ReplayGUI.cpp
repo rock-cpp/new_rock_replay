@@ -1,6 +1,7 @@
 #include "ReplayGUI.h"
 #include <qwt_abstract_scale_draw.h>
 #include <qwt_plot_curve.h>
+#include <qwt_plot_canvas.h>
 #include <QxtSpanSlider>
 
 TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName)
@@ -51,6 +52,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.qwtPlot->enableAxis(QwtPlot::yLeft, false);
     ui.qwtPlot->enableAxis(QwtPlot::xBottom, false);
     ui.qwtPlot->setFixedHeight(30);
+    ui.qwtPlot->canvas()->setCursor(Qt::ArrowCursor);
     
     
     // icons
