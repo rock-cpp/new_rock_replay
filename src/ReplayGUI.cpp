@@ -113,13 +113,8 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     
     // plot
     QwtPlotCurve *curve = new QwtPlotCurve("Data");
-    std::shared_ptr<ReplayGraph> graph = replayHandler->getGraph();
-    std::vector<double> x = graph->xData;
-    for(int i = 0; i < x.size(); i++)
-        x.at(i) += 1000.0; // magic number atm
-    
-    curve->setData(QVector<double>::fromStdVector(x), QVector<double>::fromStdVector(graph->yData));
-    curve->setData(QVector<double>::fromStdVector(graph->xData), QVector<double>::fromStdVector(graph->yData));
+    graphWrapper = std::make_shared<GraphWrapper>(replayHandler->getGraph());
+    curve->setData(*graphWrapper.get());
     curve->attach(ui.qwtPlot);
     
     // window title
