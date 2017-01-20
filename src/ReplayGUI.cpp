@@ -218,8 +218,7 @@ void ReplayGui::handleRestart()
         statusUpdate();
         stoppedBySlider = false;
         replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
-        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
-        
+        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition() - 1);
         if(ui.repeatButton->isChecked())
         {
             ui.playButton->setChecked(true);
