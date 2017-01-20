@@ -27,8 +27,6 @@ find_library(QWT_LIBRARIES
         NAMES qwt qwt-qt4
 )
 
-set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/Qxt/lib/pkgconfig")
-
 QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
 
 INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
