@@ -217,8 +217,6 @@ void ReplayGui::handleRestart()
         replayHandler->setReplayFactor(ui.speedBox->value());
         statusUpdate();
         stoppedBySlider = false;
-        replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
-        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition() - 1);
         if(ui.repeatButton->isChecked())
         {
             ui.playButton->setChecked(true);
@@ -248,7 +246,7 @@ void ReplayGui::stopPlay()
     ui.speedBar->setFormat("paused");
     replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
     replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition()); // ensure that old span is kept
-    replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
+    replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition() - 1);
     statusUpdate();
 }
 
