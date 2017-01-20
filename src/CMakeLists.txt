@@ -31,7 +31,7 @@ QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
 
 INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
 
-rock_executable(viz 
+rock_executable(rock-replay2 
     SOURCES
         Main.cpp
         ReplayGUI.cpp
@@ -52,6 +52,6 @@ rock_executable(viz
         main.ui
 )
 
-TARGET_LINK_LIBRARIES(viz ${QWT_LIBRARIES})
+TARGET_LINK_LIBRARIES(rock-replay2 ${QWT_LIBRARIES})
 
 
