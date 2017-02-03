@@ -15,13 +15,12 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
     
     if(!installDir)
     {
-//         std::cout << "Error, could not find AUTOPROJ_CURRENT_ROOT env.sh not sourced ?" << std::endl;
         throw std::runtime_error("Error, could not find AUTOPROJ_CURRENT_ROOT env.sh not sourced ?");
     }
     
-//     std::cout << "Loading all typekits " << std::endl;
-//     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
-//     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
+    // load all typekits
+    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
+    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
 
     orocos_cpp::TypeRegistry reg;
     
@@ -412,17 +411,6 @@ void ReplayHandler::setMaxSampleIndex(uint index)
     maxIndex = index;
 }
 
-void ReplayHandler::setTaskStates(bool start)
-{
-    for(LogTask *task : streamToTask)
-    {
-        if(start)
-            task->start();
-        else
-            task->stop();
-    }
-}
-
 
 void ReplayHandler::toggle()
 {
@@ -437,12 +425,10 @@ void ReplayHandler::toggle()
             play = true;
             restartReplay = true;
             cond.notify_one();    
-            setTaskStates(true);
         } 
         else
         {
             play = false;
-            setTaskStates(false);
         }
     }
 }
