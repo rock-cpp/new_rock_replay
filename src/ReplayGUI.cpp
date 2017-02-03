@@ -89,6 +89,8 @@ ReplayGui::~ReplayGui()
 void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
     replayHandler = new ReplayHandler(argc, argv);
+    bool buildGraph = false;
+    //replayHandler->enableGraph();
     
     // speed bar
     ui.speedBar->setMaximum(100);
@@ -117,7 +119,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.curSampleNum->setReadOnly(true);
     
     // plot
-    if(argc > 1)
+    if(argc > 1 && buildGraph)
     {
         QwtPlotCurve *curve = new QwtPlotCurve("Data");
         graphWrapper = std::make_shared<GraphWrapper>(replayHandler->getGraph());

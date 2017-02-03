@@ -179,16 +179,18 @@ void ReplayHandler::init()
     play = false;
     maxIndex = multiIndex->getSize() - 1;
     replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
-    
-    // initial graph building and timestamp buffer allocation
-    if(!graph.get())
-        buildGraph();
 }
 
 base::Time ReplayHandler::extractTimeFromStream(size_t index)
 {
     pocolog_cpp::Index &idx = multiIndex->getSampleStream(index)->getFileIndex();
     return idx.getSampleTime(multiIndex->getPosInStream(index));
+}
+
+void ReplayHandler::enableGraph()
+{
+    if(!graph.get())
+        buildGraph();
 }
 
 
@@ -201,7 +203,6 @@ void ReplayHandler::buildGraph()
     for(size_t i = 0; i < multiIndex->getSize(); i++)
     {
         base::Time curTime = extractTimeFromStream(i);
-        timestamps.push_back(curTime);
         unbiasedTimestamps.push_back(curTime.microseconds - offset);
     }
     
@@ -355,9 +356,9 @@ void ReplayHandler::replaySamples()
 
 }
 
-const base::Time ReplayHandler::getTimeStamp(size_t globalIndex) const
+const base::Time ReplayHandler::getTimeStamp(size_t globalIndex)
 {    
-    return timestamps.at(globalIndex);
+    return extractTimeFromStream(globalIndex);
 }
 
 void ReplayHandler::stop()
