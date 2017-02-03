@@ -112,6 +112,7 @@ public slots:
     void handleProgressSliderPressed();
     void handleCheckedChanged(QStandardItem *item);
     void handleSpanSlider();
+    void showInfoAbout();
 };
 
 #endif // REPLAY_GUI_H

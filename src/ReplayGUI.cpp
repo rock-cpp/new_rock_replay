@@ -3,6 +3,7 @@
 #include <qwt_abstract_scale_draw.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_canvas.h>
+#include <QtGui/QMessageBox>
 
 
 TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName)
@@ -74,6 +75,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.progressSlider, SIGNAL(sliderPressed()), this, SLOT(handleProgressSliderPressed()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     QObject::connect(ui.intervalSlider, SIGNAL(sliderReleased()), this, SLOT(handleSpanSlider()));
+    QObject::connect(ui.infoAbout, SIGNAL(triggered()), this, SLOT(showInfoAbout()));
     
     QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleCheckedChanged(QStandardItem *)));
 }
@@ -320,5 +322,10 @@ void ReplayGui::handleSpanSlider()
 }
 
 
-
+void ReplayGui::showInfoAbout()
+{
+    QMessageBox::information(this, "Credits",
+                             QString("PICOL iconset: http://www.picol.org\n").append(
+                             "SpanSlider: https://bitbucket.org/libqxt/libqxt/wiki/Home"), QMessageBox::Ok, 0);
+}
 
