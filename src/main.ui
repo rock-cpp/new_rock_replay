@@ -724,7 +724,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="infoAbout">
    <property name="text">
-    <string>About</string>
+    <string>Credits</string>
    </property>
   </action>
  </widget>
