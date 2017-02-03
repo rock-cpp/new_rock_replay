@@ -81,4 +81,6 @@ private:
     bool replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex) const;
     void init();
+    void parseFilenames(int argc, char* argv[]);
+    
 };

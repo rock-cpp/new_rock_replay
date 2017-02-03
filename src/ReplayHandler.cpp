@@ -1,5 +1,9 @@
 #include "ReplayHandler.hpp"
 #include "orocos_cpp/TypeRegistry.hpp"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
 
 
 ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
@@ -23,10 +27,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
     
     reg.loadTypelist();
     
-    for(int i = 1; i < argc; i++)
-    {
-        filenames.push_back(argv[i]);
-    }
+    parseFilenames(argc, argv);
     
     multiIndex = new pocolog_cpp::MultiFileIndex();
     
@@ -109,6 +110,54 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
         init();
     }
 }
+
+
+void ReplayHandler::parseFilenames(int argc, char* argv[])
+{
+    for(int i = 1; i < argc; i++)
+    {
+        struct stat file_stat;
+        if(stat(argv[i], &file_stat) == -1)
+        {
+            std::cerr << "stat error" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        if(S_ISDIR(file_stat.st_mode))
+        {
+            DIR *dir = opendir(argv[i]);
+            if(!dir) 
+            {
+                std::cerr << "directory opening error" << std::endl;
+                exit(EXIT_FAILURE);   
+            }
+            else
+            {
+                dirent *entry;
+                std::string dir_path = std::string(argv[i]);
+                if(dir_path.back() != '/')
+                    dir_path.append("/");
+                
+                while((entry = readdir(dir)) != 0)
+                {
+                    std::string filename = entry->d_name;
+                    if(filename.substr(filename.find_last_of(".") + 1) == "log")
+                    {
+                        if(filename == "orocos.log")
+                            continue;
+                        
+                        filenames.push_back(std::string(dir_path).append(filename));
+                    }
+                }
+            }
+        }
+        else if(S_ISREG(file_stat.st_mode))
+        {
+            filenames.push_back(argv[i]);
+        }
+    }
+}
+
 
 
 ReplayHandler::~ReplayHandler()
