@@ -115,10 +115,13 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.curSampleNum->setReadOnly(true);
     
     // plot
-    QwtPlotCurve *curve = new QwtPlotCurve("Data");
-    graphWrapper = std::make_shared<GraphWrapper>(replayHandler->getGraph());
-    curve->setData(*graphWrapper.get());
-    curve->attach(ui.qwtPlot);
+    if(argc > 1)
+    {
+        QwtPlotCurve *curve = new QwtPlotCurve("Data");
+        graphWrapper = std::make_shared<GraphWrapper>(replayHandler->getGraph());
+        curve->setData(*graphWrapper.get());
+        curve->attach(ui.qwtPlot);
+    }
     
     // window title
     if(argc == 2) 
