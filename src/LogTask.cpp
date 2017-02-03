@@ -5,6 +5,7 @@
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <rtt/transports/corba/CorbaDispatcher.hpp>
 #include <rtt/base/OutputPortInterface.hpp>
+#include <string>
 
 class PortHandle
 {
@@ -25,15 +26,6 @@ LogTask::LogTask(const std::string& name)
     RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
 }
 
-void LogTask::start()
-{
-    task->start();
-}
-
-void LogTask::stop()
-{
-    task->stop();
-}
 
 void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
 {
@@ -127,7 +119,7 @@ bool LogTask::addStream(const pocolog_cpp::InputDataStream& stream)
 }
 
 bool LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr)
-{
+{        
     size_t idx = stream.getIndex();
 //     std::cout << "TaskName is " << task->getName() << " streamName " << stream.getName() << " idx " << idx << std::endl; 
     
@@ -161,7 +153,34 @@ bool LogTask::replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr
         std::cout << "caught marshall error.." << std::endl;
         return false;
     }
-
+    
+    // currently we're only supporting default states
+    if(handle.port->getName() == "state")
+    {
+        switch(std::stoi(handle.sample.get()->toString()))
+        {
+            case 0:  // INIT
+                task->configure();
+                break;
+            case 1:  // PRE_OPERATIONAL
+                break;
+            case 2: // FATAL_ERROR
+                break;
+            case 3: // EXCEPTION
+                break;
+            case 4: // STOPPED
+                task->stop();
+                break;
+            case 5: // RUNNING
+                task->start();
+                break;
+            case 6:  // RUNTIME_ERROR
+                break;
+            default:
+                task->start();
+        }
+    }
+    
     handle.port->write(handle.sample);
     return true;
 }
