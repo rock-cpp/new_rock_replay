@@ -412,6 +412,17 @@ void ReplayHandler::setMaxSampleIndex(uint index)
     maxIndex = index;
 }
 
+void ReplayHandler::setTaskStates(bool start)
+{
+    for(LogTask *task : streamToTask)
+    {
+        if(start)
+            task->start();
+        else
+            task->stop();
+    }
+}
+
 
 void ReplayHandler::toggle()
 {
@@ -425,12 +436,13 @@ void ReplayHandler::toggle()
         {
             play = true;
             restartReplay = true;
-            cond.notify_one();
-            
+            cond.notify_one();    
+            setTaskStates(true);
         } 
         else
         {
             play = false;
+            setTaskStates(false);
         }
     }
 }

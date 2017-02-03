@@ -82,5 +82,6 @@ private:
     const base::Time getTimeStamp(size_t globalIndex);
     void init();
     void parseFilenames(int argc, char* argv[]);
+    void setTaskStates(bool start);
     
 };

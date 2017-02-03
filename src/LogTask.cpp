@@ -25,6 +25,16 @@ LogTask::LogTask(const std::string& name)
     RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
 }
 
+void LogTask::start()
+{
+    task->start();
+}
+
+void LogTask::stop()
+{
+    task->stop();
+}
+
 void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
 {
     if (name2handle.find(portName) != name2handle.end())

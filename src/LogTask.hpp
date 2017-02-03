@@ -27,6 +27,8 @@ public:
     bool replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr);
     bool createReplayPort(const std::string& portname, const std::string& typestr, PortHandle& handled);
     bool addReplayPort(RTT::base::OutputPortInterface* writer, std::string const& stream_name);
+    void start();
+    void stop();
     
     inline const RTT::TaskContext* getTaskContext() const
     {
