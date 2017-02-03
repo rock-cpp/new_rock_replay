@@ -20,11 +20,11 @@ find_package(Qt4 REQUIRED)
 find_path(QWT_INCLUDE_DIR
     NAMES qwt_plot.h
     HINTS ${QT_INCLUDE_DIR}
-    PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5
+    PATH_SUFFIXES qwt-qt4
 )
 
 find_library(QWT_LIBRARIES
-        NAMES qwt qwt-qt4
+        NAMES qwt-qt4
 )
 
 QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
