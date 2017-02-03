@@ -1,8 +1,9 @@
 #include "ReplayGUI.h"
+#include "qxtspanslider.h"
 #include <qwt_abstract_scale_draw.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_canvas.h>
-#include <QxtSpanSlider>
+
 
 TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName)
     : QStandardItem(QString(taskName.c_str())),

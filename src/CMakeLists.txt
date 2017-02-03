@@ -31,6 +31,9 @@ QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
 
 INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
 
+add_subdirectory(ext)
+include_directories(ext)
+
 rock_executable(rock-replay2 
     SOURCES
         Main.cpp
@@ -40,14 +43,13 @@ rock_executable(rock-replay2
         ReplayGUI.h
     MOC
         ReplayGUI.h
-        ressources.qrc
     DEPS_PKGCONFIG
         QtCore
         QtGui
         vizkit3d
-        QxtWidgets
     DEPS
         rock_replay
+        span_slider
     UI
         main.ui
 )

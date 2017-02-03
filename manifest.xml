@@ -8,5 +8,4 @@
   <logo>http://</logo>
   <depend package="base/cmake" />
   <depend package="tools/pocolog_cpp" />
-  <depend package="gui/qxt" />
 </package>

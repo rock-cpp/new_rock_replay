@@ -724,7 +724,7 @@
   <customwidget>
    <class>QxtSpanSlider</class>
    <extends>QSlider</extends>
-   <header>QxtSpanSlider</header>
+   <header>qxtspanslider.h</header>
   </customwidget>
  </customwidgets>
  <resources>
