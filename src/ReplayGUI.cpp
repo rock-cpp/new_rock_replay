@@ -4,6 +4,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_canvas.h>
 #include <QtGui/QMessageBox>
+#include <QFileDialog>
 
 
 TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName)
@@ -76,7 +77,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     QObject::connect(ui.intervalSlider, SIGNAL(sliderReleased()), this, SLOT(handleSpanSlider()));
     QObject::connect(ui.infoAbout, SIGNAL(triggered()), this, SLOT(showInfoAbout()));
-    
+    QObject::connect(ui.actionOpenLogfile, SIGNAL(triggered()), this, SLOT(showOpenFile()));
     QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleCheckedChanged(QStandardItem *)));
 }
 
@@ -322,6 +323,20 @@ void ReplayGui::handleSpanSlider()
             replayHandler->setMaxSampleIndex(oldSpanSliderUpper);
     }
 }
+
+
+void ReplayGui::showOpenFile()
+{
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select logfile(s)", "", "Logfiles: *.log");
+    std::vector<const char*> converted;
+    
+    for(QList<QString>::iterator it = fileNames.begin(); it != fileNames.end(); it++)
+    {
+        converted.push_back(it->toStdString().c_str());
+    }
+    initReplayHandler(converted.size(), (char**)&converted[0]);
+}
+
 
 
 void ReplayGui::showInfoAbout()

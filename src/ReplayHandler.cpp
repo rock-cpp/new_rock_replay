@@ -81,6 +81,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
         
         LogTask *task = nullptr;
         auto it = logTasks.find(taskName);
+
         if(it == logTasks.end())
         {
             task = new LogTask(taskName);

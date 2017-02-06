@@ -719,12 +719,24 @@
     <addaction name="separator"/>
     <addaction name="infoAbout"/>
    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpenLogfile"/>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuInfo"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="infoAbout">
    <property name="text">
     <string>Credits</string>
+   </property>
+  </action>
+  <action name="actionOpenLogfile">
+   <property name="text">
+    <string>Open Logfile</string>
    </property>
   </action>
  </widget>

@@ -113,6 +113,7 @@ public slots:
     void handleCheckedChanged(QStandardItem *item);
     void handleSpanSlider();
     void showInfoAbout();
+    void showOpenFile();
 };
 
 #endif // REPLAY_GUI_H
