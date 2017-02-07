@@ -40,6 +40,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.taskNameList->setModel(tasksModel);    
     tasksModel->setHorizontalHeaderItem(0, new QStandardItem(QString("Tasknames")));
     
+    
     // timer
     statusUpdateTimer = new QTimer();
     statusUpdateTimer->setInterval(10);
@@ -57,12 +58,23 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.qwtPlot->setFixedHeight(30);
     ui.qwtPlot->canvas()->setCursor(Qt::ArrowCursor);
     
+    // make port and timestamp line edits grey
+    QPalette replayInfoPalette;
+    replayInfoPalette.setColor(QPalette::Base,Qt::lightGray);
+    ui.curPortName->setPalette(replayInfoPalette);
+    ui.curPortName->setReadOnly(true);
+    ui.curTimestamp->setPalette(replayInfoPalette);
+    ui.curTimestamp->setReadOnly(true);
+    ui.curSampleNum->setPalette(replayInfoPalette);
+    ui.curSampleNum->setReadOnly(true);
+    
     
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
     
     stoppedBySlider = false;
+    replayHandler = nullptr;
     
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
@@ -89,6 +101,14 @@ ReplayGui::~ReplayGui()
 
 void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
+    if(replayHandler)
+    {
+        if(replayHandler->isValid())
+            replayHandler->stop();
+        
+        delete replayHandler;
+    }
+        
     replayHandler = new ReplayHandler(argc, argv);
     bool buildGraph = false;
     //replayHandler->enableGraph();
@@ -110,15 +130,6 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     oldSpanSliderUpper = replayHandler->getMaxIndex();
     
     
-    QPalette *replayInfoPalette = new QPalette();
-    replayInfoPalette->setColor(QPalette::Base,Qt::lightGray);
-    ui.curPortName->setPalette(*replayInfoPalette);
-    ui.curPortName->setReadOnly(true);
-    ui.curTimestamp->setPalette(*replayInfoPalette);
-    ui.curTimestamp->setReadOnly(true);
-    ui.curSampleNum->setPalette(*replayInfoPalette);
-    ui.curSampleNum->setReadOnly(true);
-    
     // plot
     if(argc > 1 && buildGraph)
     {
@@ -129,15 +140,24 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     }
     
     // window title
-    if(argc == 2) 
-        this->setWindowTitle(QString(argv[1]));
-    else if(argc > 2)
-        this->setWindowTitle(QString("Multi Logfile Replay"));
+    switch(argc)
+    {
+        case 1:
+            this->setWindowTitle("Rock-Replay");
+            break;
+        case 2:
+            this->setWindowTitle(QString(argv[1]));
+            break;
+        default:
+            this->setWindowTitle(QString("Multi Logfile Replay"));
+            break;
+    }
+        
 }
 
 
 void ReplayGui::updateTaskView()
-{
+{   
     for(const std::pair<std::string, LogTask*>& cur : replayHandler->getAllLogTasks())
     {        
         TreeViewRootItem *task = new TreeViewRootItem(cur.second, cur.first);
@@ -328,13 +348,20 @@ void ReplayGui::handleSpanSlider()
 void ReplayGui::showOpenFile()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select logfile(s)", "", "Logfiles: *.log");
-    std::vector<const char*> converted;
-    
+    std::vector<std::string> stdStrings{"rock-replay2"};
+    std::vector<char*> cStrings;
     for(QList<QString>::iterator it = fileNames.begin(); it != fileNames.end(); it++)
     {
-        converted.push_back(it->toStdString().c_str());
+        stdStrings.push_back(it->toStdString());
     }
-    initReplayHandler(converted.size(), (char**)&converted[0]);
+    
+    for(std::string &s : stdStrings)
+    {
+        cStrings.push_back(&s.front());
+    }
+    
+    initReplayHandler(cStrings.size(), cStrings.data());
+//     updateTaskView();
 }
 
 

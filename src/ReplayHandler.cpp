@@ -161,8 +161,13 @@ void ReplayHandler::parseFilenames(int argc, char* argv[])
 
 
 ReplayHandler::~ReplayHandler()
-{
+{       
+    RTT::corba::TaskContextServer::DestroyOrb();
+    
     delete multiIndex;
+    
+    for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
+        delete it->second;
     
     if(valid)
         delete replayThread;

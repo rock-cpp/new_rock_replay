@@ -22,6 +22,7 @@ class LogTask
     std::map<std::string, PortHandle *> name2handle;
 public:
     LogTask(const std::string &name);
+    ~LogTask();
     
     bool addStream(const pocolog_cpp::InputDataStream &stream);
     bool replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr);
