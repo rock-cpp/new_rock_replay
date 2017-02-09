@@ -394,6 +394,7 @@ const base::Time ReplayHandler::getTimeStamp(size_t globalIndex)
 
 void ReplayHandler::stop()
 {
+    mut.unlock();
     delete replayThread;
     init();
 }

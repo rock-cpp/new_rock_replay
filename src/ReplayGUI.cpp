@@ -377,6 +377,7 @@ void ReplayGui::showOpenFile()
         cStrings.push_back(&s.front());
     }
     
+    stopPlay();
     initReplayHandler(cStrings.size(), cStrings.data());
     updateTaskView();
 }
