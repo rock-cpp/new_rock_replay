@@ -14,6 +14,17 @@ TreeViewRootItem::TreeViewRootItem(LogTask *logTask, const std::string &taskName
     
 }
 
+TreeViewRootItem::~TreeViewRootItem()
+{
+    while(this->rowCount() > 0)
+    {
+        QList<QStandardItem*> rows = this->takeRow(0);
+        for(QStandardItem *item : rows)
+            delete item;
+    }
+}
+
+
 void ReplayGui::handleCheckedChanged(QStandardItem *item)
 {
     TreeViewRootItem *taskItem = nullptr;
@@ -158,6 +169,13 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
 
 void ReplayGui::updateTaskView()
 {   
+    while(tasksModel->rowCount() > 0)
+    {
+        QList<QStandardItem*> rows = tasksModel->takeRow(0);
+        for(QStandardItem *item : rows)
+            delete item;
+    }
+    
     for(const std::pair<std::string, LogTask*>& cur : replayHandler->getAllLogTasks())
     {        
         TreeViewRootItem *task = new TreeViewRootItem(cur.second, cur.first);
@@ -361,7 +379,7 @@ void ReplayGui::showOpenFile()
     }
     
     initReplayHandler(cStrings.size(), cStrings.data());
-//     updateTaskView();
+    updateTaskView();
 }
 
 
