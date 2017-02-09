@@ -21,14 +21,32 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
     // load all typekits
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
+    
+    multiIndex = nullptr;
+    replayThread = nullptr;
+}
 
-    orocos_cpp::TypeRegistry reg;
+void ReplayHandler::reset(int argc, char* argv[])
+{
+    std::vector<std::string> filenames = parseFilenames(argc, argv);
     
-    reg.loadTypelist();
-    
-    parseFilenames(argc, argv);
+    if(multiIndex)
+        delete multiIndex;
     
     multiIndex = new pocolog_cpp::MultiFileIndex();
+    
+    if(replayThread)
+        delete replayThread;
+    
+    for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
+        delete it->second;
+    
+    
+    logTasks.clear();
+    streamToTask.clear();
+
+    orocos_cpp::TypeRegistry reg;
+    reg.loadTypelist();
     
     RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
 
@@ -112,8 +130,10 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
 }
 
 
-void ReplayHandler::parseFilenames(int argc, char* argv[])
+std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[])
 {
+    std::vector<std::string> filenames;
+    
     for(int i = 1; i < argc; i++)
     {
         struct stat file_stat;
@@ -150,28 +170,34 @@ void ReplayHandler::parseFilenames(int argc, char* argv[])
                     }
                 }
             }
+            closedir(dir);
         }
         else if(S_ISREG(file_stat.st_mode))
         {
             filenames.push_back(argv[i]);
         }
     }
+    
+    return filenames;
 }
 
 
 
 ReplayHandler::~ReplayHandler()
 {       
-    RTT::corba::TaskContextServer::DestroyOrb();
+//     RTT::corba::TaskContextServer::DestroyOrb();
     
-    delete multiIndex;
-    
-    for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
-        delete it->second;
-    
+    mut.unlock();    
     if(valid)
         delete replayThread;
+       
+    for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
+        delete it->second;
+        
+    delete multiIndex;
+
 }
+
 
 void ReplayHandler::init()
 {

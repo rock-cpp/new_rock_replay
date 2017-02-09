@@ -55,15 +55,14 @@ private:
     
 public:
     TreeViewRootItem(LogTask *logTask, const std::string &taskName);
+    virtual ~TreeViewRootItem();
     
     LogTask *getLogTask()
     {
         return logTask;
     }
     
-    ~TreeViewRootItem()
-    {
-    }
+
 };
 
 class ReplayGui : public QMainWindow

@@ -35,6 +35,7 @@ public:
     void setReplayFactor(double factor);
     void setMaxSampleIndex(uint index);
     void enableGraph();
+    void reset(int argc, char* argv[]);
     
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
@@ -44,7 +45,6 @@ public:
     inline const size_t getMaxIndex() { return multiIndex->getSize(); };
     inline const double getReplayFactor() { return replayFactor; };
     inline const double getCurrentSpeed() { return play ? currentSpeed : 0; };
-    inline const std::vector<std::string> getFileNames() { return filenames; };
     inline const bool isValid() { return valid; };
     inline const bool hasFinished() { return finished; };
     inline const std::shared_ptr<ReplayGraph> getGraph() { return graph; };
@@ -69,7 +69,6 @@ private:
     boost::condition_variable cond;
     boost::mutex mut;
     
-    std::vector<std::string> filenames;
     std::map<std::string, LogTask *> logTasks;
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
@@ -81,6 +80,6 @@ private:
     bool replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex);
     void init();
-    void parseFilenames(int argc, char* argv[]);
+    std::vector<std::string> parseFilenames(int argc, char* argv[]);
     
 };

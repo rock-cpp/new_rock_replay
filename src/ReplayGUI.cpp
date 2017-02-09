@@ -106,21 +106,20 @@ ReplayGui::ReplayGui(QMainWindow *parent)
 
 ReplayGui::~ReplayGui()
 {
+    replayHandler->stop();
     delete replayHandler;
 }
 
 
 void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
-    if(replayHandler)
+    if(!replayHandler)
     {
-        if(replayHandler->isValid())
-            replayHandler->stop();
-        
-        delete replayHandler;
+        replayHandler = new ReplayHandler(argc, argv);
     }
-        
-    replayHandler = new ReplayHandler(argc, argv);
+    
+    replayHandler->reset(argc, argv);
+    
     bool buildGraph = false;
     //replayHandler->enableGraph();
     
