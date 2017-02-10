@@ -62,6 +62,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.speedBar->setMinimum(0);
     ui.speedBar->setFormat("paused");
     ui.speedBar->setValue(0);
+    ui.speedBar->setMaximum(100);
     
     // plot
     ui.qwtPlot->enableAxis(QwtPlot::yLeft, false);
@@ -84,8 +85,8 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
     
-    stoppedBySlider = false;
     replayHandler = nullptr;
+    stoppedBySlider = false;
     
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
@@ -113,18 +114,14 @@ ReplayGui::~ReplayGui()
 
 void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
-    if(!replayHandler)
+    if(replayHandler)
     {
-        replayHandler = new ReplayHandler(argc, argv);
+        delete replayHandler;
     }
-    
-    replayHandler->reset(argc, argv);
-    
+    replayHandler = new ReplayHandler(argc, argv);    
+
     bool buildGraph = false;
     //replayHandler->enableGraph();
-    
-    // speed bar
-    ui.speedBar->setMaximum(100);
     
     // progress bar
     ui.progressSlider->setMaximum(replayHandler->getMaxIndex());
@@ -136,6 +133,8 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.intervalSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
     ui.intervalSlider->setMaximum(replayHandler->getMaxIndex());
     ui.intervalSlider->setSpan(0, replayHandler->getMaxIndex());
+    ui.intervalSlider->setLowerPosition(0);
+    ui.intervalSlider->setUpperPosition(replayHandler->getMaxIndex());
     oldSpanSliderLower = 0;
     oldSpanSliderUpper = replayHandler->getMaxIndex();
     
@@ -161,8 +160,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
         default:
             this->setWindowTitle(QString("Multi Logfile Replay"));
             break;
-    }
-        
+    }        
 }
 
 
@@ -284,15 +282,18 @@ void ReplayGui::statusUpdate()
 
 void ReplayGui::stopPlay()
 {
-    replayHandler->stop();
+    if(replayHandler->isValid())
+    {
+        replayHandler->stop();
+        replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
+        replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition()); // ensure that old span is kept
+        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition() - 1);
+    }
     ui.playButton->setIcon(playIcon);
     ui.playButton->setChecked(false);
     statusUpdateTimer->stop();
     ui.speedBar->setValue(0);
     ui.speedBar->setFormat("paused");
-    replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
-    replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition()); // ensure that old span is kept
-    replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition() - 1);
     statusUpdate();
 }
 
@@ -365,9 +366,11 @@ void ReplayGui::handleSpanSlider()
 void ReplayGui::showOpenFile()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select logfile(s)", "", "Logfiles: *.log");
+    QStringList fileNamesCopy = fileNames;  // doc says so
+
     std::vector<std::string> stdStrings{"rock-replay2"};
     std::vector<char*> cStrings;
-    for(QList<QString>::iterator it = fileNames.begin(); it != fileNames.end(); it++)
+    for(QList<QString>::iterator it = fileNamesCopy.begin(); it != fileNamesCopy.end(); it++)
     {
         stdStrings.push_back(it->toStdString());
     }
@@ -380,6 +383,7 @@ void ReplayGui::showOpenFile()
     stopPlay();
     initReplayHandler(cStrings.size(), cStrings.data());
     updateTaskView();
+    statusUpdate();
 }
 
 

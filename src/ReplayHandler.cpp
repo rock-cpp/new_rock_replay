@@ -1,9 +1,10 @@
 #include "ReplayHandler.hpp"
-#include "orocos_cpp/TypeRegistry.hpp"
+#include <orocos_cpp/TypeRegistry.hpp>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <rtt/transports/corba/CorbaDispatcher.hpp>
 
 
 ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
@@ -18,36 +19,13 @@ ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
         throw std::runtime_error("Error, could not find AUTOPROJ_CURRENT_ROOT env.sh not sourced ?");
     }
     
-    // load all typekits
+    // load basic typekits
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
-    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/types/");
+       
+    multiIndex = new pocolog_cpp::MultiFileIndex();    
     
-    multiIndex = nullptr;
-    replayThread = nullptr;
-}
-
-void ReplayHandler::reset(int argc, char* argv[])
-{
-    std::vector<std::string> filenames = parseFilenames(argc, argv);
-    
-    if(multiIndex)
-        delete multiIndex;
-    
-    multiIndex = new pocolog_cpp::MultiFileIndex();
-    
-    if(replayThread)
-        delete replayThread;
-    
-    for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
-        delete it->second;
-    
-    
-    logTasks.clear();
-    streamToTask.clear();
-
     orocos_cpp::TypeRegistry reg;
     reg.loadTypelist();
-    
     RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
 
     multiIndex->registerStreamCheck([&](pocolog_cpp::Stream *st){
@@ -71,7 +49,7 @@ void ReplayHandler::reset(int argc, char* argv[])
         {
             return false;
         }
-     
+    
         RTT::types::TypeInfo* type = ti->type(dataStream->getCXXType());
         if (! type)
         {
@@ -84,8 +62,7 @@ void ReplayHandler::reset(int argc, char* argv[])
     }
     );
     
-    multiIndex->createIndex(filenames);
-    
+    multiIndex->createIndex(parseFilenames(argc, argv));
     streamToTask.resize(multiIndex->getAllStreams().size());
 
     for(pocolog_cpp::Stream *st : multiIndex->getAllStreams())
@@ -185,17 +162,19 @@ std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[])
 
 ReplayHandler::~ReplayHandler()
 {       
-//     RTT::corba::TaskContextServer::DestroyOrb();
+    RTT::corba::CorbaDispatcher::ReleaseAll();
+    RTT::corba::TaskContextServer::CleanupServers();
     
-    mut.unlock();    
-    if(valid)
+    if(valid && replayThread)
+    {
+        mut.unlock();
         delete replayThread;
+    }
        
     for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
         delete it->second;
         
-    delete multiIndex;
-
+    delete multiIndex;    
 }
 
 
@@ -304,20 +283,18 @@ void ReplayHandler::replaySamples()
     
     while(!finished)
     {
-        
         while(!play)
         {
             cond.wait(lock);
             restartReplay = true;
         }
 
-        
         if(curIndex >= allSamples)
         {
             play = false;
             continue;
         }
-
+        
         if(restartReplay)
         {
             systemPlayStartTime = base::Time::now();
@@ -325,7 +302,6 @@ void ReplayHandler::replaySamples()
             //expensive call
             curStamp = getTimeStamp(curIndex);
             logPlayStartTime = curStamp;
-            
             restartReplay = false;
         }
 
@@ -366,7 +342,7 @@ void ReplayHandler::replaySamples()
         // std::cout << "Log time since start " << logTimeSinceStart << std::endl;
         // std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
         // std::cout << "To Sleep " << toSleep.microseconds << std::endl;
-        
+
         if(toSleep.microseconds > 0)
         {
             usleep(toSleep.microseconds);

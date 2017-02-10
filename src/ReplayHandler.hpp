@@ -35,7 +35,6 @@ public:
     void setReplayFactor(double factor);
     void setMaxSampleIndex(uint index);
     void enableGraph();
-    void reset(int argc, char* argv[]);
     
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
