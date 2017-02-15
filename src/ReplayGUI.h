@@ -95,7 +95,6 @@ private:
     double sliderToBox(int val);
     int boxToSlider(double val);
     bool stoppedBySlider;
-    int oldSpanSliderLower, oldSpanSliderUpper;
 
     
 public slots:

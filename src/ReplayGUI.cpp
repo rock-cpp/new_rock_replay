@@ -135,8 +135,6 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.intervalSlider->setSpan(0, replayHandler->getMaxIndex());
     ui.intervalSlider->setLowerPosition(0);
     ui.intervalSlider->setUpperPosition(replayHandler->getMaxIndex());
-    oldSpanSliderLower = 0;
-    oldSpanSliderUpper = replayHandler->getMaxIndex();
     
     
     // plot
@@ -344,22 +342,9 @@ void ReplayGui::handleProgressSliderPressed()
 
 void ReplayGui::handleSpanSlider()
 {
-    if(!ui.intervalSlider->isSliderDown() && oldSpanSliderLower != ui.intervalSlider->lowerPosition())  // necessary because qxt span slider has no lower/upper released signal
-    {
-        oldSpanSliderLower = ui.intervalSlider->lowerPosition();
-        stopPlay();
-        replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
-        ui.playButton->setChecked(true);
-        togglePlay();
-    }
-    
-    if(!ui.intervalSlider->isSliderDown() && oldSpanSliderUpper != ui.intervalSlider->upperPosition())
-    {
-        oldSpanSliderUpper = ui.intervalSlider->upperPosition();
-        
-        if(oldSpanSliderUpper > replayHandler->getCurIndex())  // we can't go back in time, so wait until one replay episode has finished
-            replayHandler->setMaxSampleIndex(oldSpanSliderUpper);
-    }
+    replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
+    replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
+    replayHandler->restart();
 }
 
 

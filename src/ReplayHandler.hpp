@@ -48,6 +48,7 @@ public:
     inline const bool hasFinished() { return finished; };
     inline const std::shared_ptr<ReplayGraph> getGraph() { return graph; };
     inline const bool isPlaying() { return play; };
+    inline void restart() { restartReplay = true; };
     
     
 private:  
