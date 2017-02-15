@@ -6,47 +6,9 @@
 #include <QMainWindow>
 #include <QStandardItemModel>
 #include <QTimer>
-#include <qwt_data.h>
 
 #include "ui_main.h"
 
-class GraphWrapper : public QwtData
-{
-public:
-    GraphWrapper(const std::shared_ptr<ReplayGraph> graph)
-        : xData(graph->xData)
-        , yData(graph->yData)
-    {}
-    
-    GraphWrapper(std::vector<double> x, std::vector<double> y)
-        : xData(x)
-        , yData(y)
-    {}
-
-    virtual QwtData* copy() const
-    {
-        return new GraphWrapper(xData, yData);
-    }
-    
-    virtual size_t size() const
-    {
-        return xData.size();
-    }
-    
-    virtual double x(size_t i) const
-    {
-        return xData.at(i) + 500;
-    }
-    
-    virtual double y(size_t i) const
-    {
-        return yData.at(i);
-    }
-    
-private:
-    std::vector<double> xData, yData;
-    
-};
 
 class TreeViewRootItem : public QStandardItem
 {
@@ -79,7 +41,6 @@ public:
 private:
     Ui::MainWindow ui;
     ReplayHandler *replayHandler;
-    std::shared_ptr<GraphWrapper> graphWrapper;
     
     // models
     QStandardItemModel *tasksModel;

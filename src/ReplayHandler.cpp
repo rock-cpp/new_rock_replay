@@ -7,8 +7,7 @@
 #include <rtt/transports/corba/CorbaDispatcher.hpp>
 
 
-ReplayHandler::ReplayHandler(int argc, char** argv, uint windowSize)
-    : windowSize(windowSize)
+ReplayHandler::ReplayHandler(int argc, char** argv)
 {
     RTT::corba::TaskContextServer::InitOrb(argc, argv);
 
@@ -196,50 +195,6 @@ base::Time ReplayHandler::extractTimeFromStream(size_t index)
     pocolog_cpp::Index &idx = multiIndex->getSampleStream(index)->getFileIndex();
     return idx.getSampleTime(multiIndex->getPosInStream(index));
 }
-
-void ReplayHandler::enableGraph()
-{
-    if(!graph.get())
-        buildGraph();
-}
-
-
-
-void ReplayHandler::buildGraph()
-{
-    int64_t offset = extractTimeFromStream(0).toMicroseconds();
-    std::vector<double> x, y;
-    std::vector<int64_t> unbiasedTimestamps; // buffer for stddev calculation
-    for(size_t i = 0; i < multiIndex->getSize(); i++)
-    {
-        base::Time curTime = extractTimeFromStream(i);
-        unbiasedTimestamps.push_back(curTime.microseconds - offset);
-    }
-    
-    double maxStd = 0;
-    for(uint i = windowSize; i < unbiasedTimestamps.size(); i++)
-    {
-        std::vector<int64_t> buf(unbiasedTimestamps.begin() + i - windowSize, unbiasedTimestamps.begin() + i);
-        double mean = std::accumulate(buf.begin(), buf.end(), 0.0) / buf.size();
-        double variance = 0;
-        std::for_each(buf.begin(), buf.end(), [&](int64_t &val){ variance += std::pow(mean - val, 2); });
-        variance /= buf.size();
-        double stdDeviation = std::sqrt(variance);
-        y.push_back(stdDeviation);   
-        x.push_back(i);
-        
-        if(stdDeviation > maxStd)
-            maxStd = stdDeviation;
-    }
-    
-    for(int i = 0; i < y.size(); i++)
-        y.at(i) = 1 - y.at(i) / maxStd;
-
-    graph = std::make_shared<ReplayGraph>();
-    graph->xData = x;
-    graph->yData = y;
-}
-
 
 
 bool ReplayHandler::replaySample(size_t index, bool dryRun) const

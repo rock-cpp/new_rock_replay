@@ -10,17 +10,12 @@
 
 #include "LogTask.hpp"
 
-struct ReplayGraph
-{
-    std::vector<double> xData;
-    std::vector<double> yData;
-};
 
 class ReplayHandler
 {
     
 public:
-    ReplayHandler(int argc, char** argv, uint windowSize = 20);
+    ReplayHandler(int argc, char** argv);
     ~ReplayHandler();
     
     void replaySamples();
@@ -46,7 +41,6 @@ public:
     inline const double getCurrentSpeed() { return play ? currentSpeed : 0; };
     inline const bool isValid() { return valid; };
     inline const bool hasFinished() { return finished; };
-    inline const std::shared_ptr<ReplayGraph> getGraph() { return graph; };
     inline const bool isPlaying() { return play; };
     inline void restart() { restartReplay = true; };
     
@@ -62,7 +56,6 @@ private:
     uint maxIndex;
     bool finished;
     bool valid;
-    uint windowSize;
     
     bool play;
     boost::thread *replayThread;
@@ -73,10 +66,7 @@ private:
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
     
-    std::shared_ptr<ReplayGraph> graph;
-    
     base::Time extractTimeFromStream(size_t index);
-    void buildGraph();
     bool replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex);
     void init();

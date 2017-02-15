@@ -1,8 +1,5 @@
 #include "ReplayGUI.h"
 #include "qxtspanslider.h"
-#include <qwt_abstract_scale_draw.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_canvas.h>
 #include <QtGui/QMessageBox>
 #include <QFileDialog>
 
@@ -64,11 +61,6 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     ui.speedBar->setValue(0);
     ui.speedBar->setMaximum(100);
     
-    // plot
-    ui.qwtPlot->enableAxis(QwtPlot::yLeft, false);
-    ui.qwtPlot->enableAxis(QwtPlot::xBottom, false);
-    ui.qwtPlot->setFixedHeight(30);
-    ui.qwtPlot->canvas()->setCursor(Qt::ArrowCursor);
     
     // make port and timestamp line edits grey
     QPalette replayInfoPalette;
@@ -119,9 +111,6 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
         delete replayHandler;
     }
     replayHandler = new ReplayHandler(argc, argv);    
-
-    bool buildGraph = false;
-    //replayHandler->enableGraph();
     
     // progress bar
     ui.progressSlider->setMaximum(replayHandler->getMaxIndex());
@@ -136,15 +125,6 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.intervalSlider->setLowerPosition(0);
     ui.intervalSlider->setUpperPosition(replayHandler->getMaxIndex());
     
-    
-    // plot
-    if(argc > 1 && buildGraph)
-    {
-        QwtPlotCurve *curve = new QwtPlotCurve("Data");
-        graphWrapper = std::make_shared<GraphWrapper>(replayHandler->getGraph());
-        curve->setData(*graphWrapper.get());
-        curve->attach(ui.qwtPlot);
-    }
     
     // window title
     switch(argc)
