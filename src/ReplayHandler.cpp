@@ -20,7 +20,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     
     // load basic typekits
     orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
-       
+    
     multiIndex = new pocolog_cpp::MultiFileIndex();    
     
     orocos_cpp::TypeRegistry reg;
@@ -103,6 +103,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     {
         init();
     }
+    
 }
 
 
@@ -163,12 +164,6 @@ ReplayHandler::~ReplayHandler()
 {       
     RTT::corba::CorbaDispatcher::ReleaseAll();
     RTT::corba::TaskContextServer::CleanupServers();
-    
-    if(valid && replayThread)
-    {
-        mut.unlock();
-        delete replayThread;
-    }
        
     for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
         delete it->second;
@@ -185,9 +180,9 @@ void ReplayHandler::init()
     curTimeStamp = "";
     curSamplePortName = "";
     finished = false;
-    play = false;
+    playing = false;
     maxIndex = multiIndex->getSize() - 1;
-    replayThread = new boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
+    boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
 }
 
 base::Time ReplayHandler::extractTimeFromStream(size_t index)
@@ -222,10 +217,6 @@ void ReplayHandler::replaySamples()
 {   
     boost::unique_lock<boost::mutex> lock(mut);
     
-    base::Time start(base::Time::now()), lastExecute(base::Time::now());
-    
-    size_t allSamples = multiIndex->getSize();
-    
     restartReplay = true;
     
     base::Time lastStamp;
@@ -236,20 +227,21 @@ void ReplayHandler::replaySamples()
     base::Time logPlayStartTime;
     curStamp = getTimeStamp(curIndex);
     
-    while(!finished)
+    while(1)
     {
-        while(!play)
+        while(!playing)
         {
             cond.wait(lock);
             restartReplay = true;
         }
 
-        if(curIndex >= allSamples)
+        varMut.lock();
+        if(curIndex >= maxIndex)
         {
-            play = false;
+            finished = true;
             continue;
         }
-        
+
         if(restartReplay)
         {
             systemPlayStartTime = base::Time::now();
@@ -268,19 +260,15 @@ void ReplayHandler::replaySamples()
             curIndex++;
             continue;
         }
-
+     
+        
         lastStamp = curStamp;
-
         curIndex++;
-        if(curIndex >= allSamples)
-        {
-            play = false;
-            continue;
-        }
       
         curStamp = getTimeStamp(curIndex);
         curTimeStamp = curStamp.toString();
         
+
         if(lastStamp > curStamp)
         {
             std::cout << "Warning: invalid sample order curStamp " << curStamp <<  " Last Stamp " << lastStamp << std::endl;
@@ -294,9 +282,9 @@ void ReplayHandler::replaySamples()
         base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
         toSleep = logTimeSinceStart - systemTimeSinceStart;
 
-        // std::cout << "Log time since start " << logTimeSinceStart << std::endl;
-        // std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
-        // std::cout << "To Sleep " << toSleep.microseconds << std::endl;
+//         std::cout << "Log time since start " << logTimeSinceStart << std::endl;
+//         std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
+//         std::cout << "To Sleep " << toSleep.microseconds << std::endl;
 
         if(toSleep.microseconds > 0)
         {
@@ -311,9 +299,7 @@ void ReplayHandler::replaySamples()
         {
             currentSpeed = logTimeSinceStart.toSeconds() / systemTimeSinceStart.toSeconds();   
         }      
-        
-        if(curIndex == maxIndex)
-            finished = true;
+        varMut.unlock();
     }
 
 }
@@ -325,9 +311,13 @@ const base::Time ReplayHandler::getTimeStamp(size_t globalIndex)
 
 void ReplayHandler::stop()
 {
-    mut.unlock();
-    delete replayThread;
-    init();
+    varMut.unlock();
+    curIndex = 0;
+    curTimeStamp = "";
+    curSamplePortName = "";
+    finished = false;
+    playing = false;
+    restartReplay = true;
 }
 
 
@@ -365,34 +355,32 @@ void ReplayHandler::previous()
 
 void ReplayHandler::setSampleIndex(uint index)
 {
+    varMut.lock();
     curIndex = index;
     replaySample(curIndex, true); // do a dry run for metadata update
     curTimeStamp = getTimeStamp(curIndex).toString();
+    varMut.unlock();
 }
 
 void ReplayHandler::setMaxSampleIndex(uint index)
 {
+    varMut.lock();
     maxIndex = index;
+    varMut.unlock();
 }
 
-
-void ReplayHandler::toggle()
+void ReplayHandler::play()
 {
-    if(!valid)
+    if(valid && !playing)
     {
-        std::cerr << "empty streams loaded" << std::endl;
+        playing = true;
+        restartReplay = true;
+        cond.notify_one();
     }
-    else
-    {
-        if(!play)
-        {
-            play = true;
-            restartReplay = true;
-            cond.notify_one();    
-        } 
-        else
-        {
-            play = false;
-        }
-    }
+}
+
+void ReplayHandler::pause()
+{
+    if(valid && playing)
+        playing = false;
 }

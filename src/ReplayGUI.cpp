@@ -209,9 +209,10 @@ double ReplayGui::sliderToBox(int val)
 
 void ReplayGui::togglePlay()
 {
-    replayHandler->toggle();
-    if(ui.playButton->isChecked())
+    if(!replayHandler->isPlaying())
     {
+        replayHandler->play();
+        ui.playButton->setChecked(true);
         ui.playButton->setIcon(pauseIcon);
         ui.speedBar->setFormat("%p%");
         statusUpdateTimer->start();
@@ -219,6 +220,7 @@ void ReplayGui::togglePlay()
     }
     else
     {
+        replayHandler->pause();
         ui.playButton->setIcon(playIcon);
         ui.playButton->setChecked(false);
         statusUpdateTimer->stop();
@@ -236,12 +238,10 @@ void ReplayGui::handleRestart()
     {
         checkFinishedTimer->stop();
         stopPlay();
-        replayHandler->setReplayFactor(ui.speedBox->value());
         statusUpdate();
         stoppedBySlider = false;
         if(ui.repeatButton->isChecked())
         {
-            ui.playButton->setChecked(true);
             togglePlay();
         }    
     }
@@ -265,7 +265,7 @@ void ReplayGui::stopPlay()
         replayHandler->stop();
         replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
         replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition()); // ensure that old span is kept
-        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition() - 1);
+        replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
     }
     ui.playButton->setIcon(playIcon);
     ui.playButton->setChecked(false);
@@ -308,7 +308,6 @@ void ReplayGui::progressSliderUpdate()
     statusUpdate();
     if(stoppedBySlider)
     {
-        ui.playButton->setChecked(true);
         togglePlay();
         statusUpdateTimer->start();
     }
@@ -322,9 +321,9 @@ void ReplayGui::handleProgressSliderPressed()
 
 void ReplayGui::handleSpanSlider()
 {
+    stopPlay();
     replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition());
     replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
-    replayHandler->restart();
 }
 
 

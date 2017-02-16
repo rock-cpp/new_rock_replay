@@ -17,11 +17,11 @@ class ReplayHandler
 public:
     ReplayHandler(int argc, char** argv);
     ~ReplayHandler();
+   
     
-    void replaySamples();
-    
-    void toggle();
     void stop();
+    void play();
+    void pause();
     
     void next();
     void previous();
@@ -29,19 +29,18 @@ public:
     
     void setReplayFactor(double factor);
     void setMaxSampleIndex(uint index);
-    void enableGraph();
     
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
     inline const std::string getCurTimeStamp() { return curTimeStamp; };
     inline const std::string getCurSamplePortName() { return curSamplePortName; };
     inline const uint getCurIndex() { return curIndex; };
-    inline const size_t getMaxIndex() { return multiIndex->getSize(); };
+    inline const size_t getMaxIndex() { return maxIndex; };
     inline const double getReplayFactor() { return replayFactor; };
-    inline const double getCurrentSpeed() { return play ? currentSpeed : 0; };
+    inline const double getCurrentSpeed() { return playing ? currentSpeed : 0; };
     inline const bool isValid() { return valid; };
     inline const bool hasFinished() { return finished; };
-    inline const bool isPlaying() { return play; };
+    inline const bool isPlaying() { return playing; };
     inline void restart() { restartReplay = true; };
     
     
@@ -57,10 +56,10 @@ private:
     bool finished;
     bool valid;
     
-    bool play;
-    boost::thread *replayThread;
+    bool playing;
     boost::condition_variable cond;
     boost::mutex mut;
+    boost::mutex varMut;
     
     std::map<std::string, LogTask *> logTasks;
     std::vector<LogTask *> streamToTask;
@@ -70,6 +69,7 @@ private:
     bool replaySample(size_t index, bool dryRun = false) const;
     const base::Time getTimeStamp(size_t globalIndex);
     void init();
+    void replaySamples();
     std::vector<std::string> parseFilenames(int argc, char* argv[]);
     
 };
