@@ -117,7 +117,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     ui.progressSlider->setMaximum(replayHandler->getMaxIndex());
     
     // labels
-    ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
+    ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex() + 1)).c_str()));
     
     // span slider
     ui.intervalSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
