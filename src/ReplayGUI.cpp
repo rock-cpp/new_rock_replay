@@ -111,6 +111,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
         delete replayHandler;
     }
     replayHandler = new ReplayHandler(argc, argv);    
+    replayHandler->setReplayFactor(ui.speedBox->value());
     
     // progress bar
     ui.progressSlider->setMaximum(replayHandler->getMaxIndex());
