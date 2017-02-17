@@ -140,6 +140,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
             this->setWindowTitle(QString("Multi Logfile Replay"));
             break;
     }        
+    statusUpdate();
 }
 
 
@@ -212,23 +213,15 @@ void ReplayGui::togglePlay()
 {
     if(!replayHandler->isPlaying())
     {
-        replayHandler->play();
-        ui.playButton->setChecked(true);
-        ui.playButton->setIcon(pauseIcon);
-        ui.speedBar->setFormat("%p%");
-        statusUpdateTimer->start();
         checkFinishedTimer->start();
+        replayHandler->play();
+        changeGUIMode(PAUSED);
     }
     else
     {
-        replayHandler->pause();
-        ui.playButton->setIcon(playIcon);
-        ui.playButton->setChecked(false);
-        statusUpdateTimer->stop();
         checkFinishedTimer->stop();
-        ui.speedBar->setValue(0);
-        ui.speedBar->setFormat("paused");
-        stoppedBySlider = false;
+        replayHandler->pause();
+        changeGUIMode(PLAYING);
     }
 }
 
@@ -245,6 +238,29 @@ void ReplayGui::handleRestart()
         {
             togglePlay();
         }    
+
+
+
+void ReplayGui::changeGUIMode(GUI_MODES mode)
+{
+    switch(mode)
+    {
+        case PLAYING:
+            ui.playButton->setIcon(playIcon);
+            ui.playButton->setChecked(false);
+            statusUpdateTimer->stop();
+            checkFinishedTimer->stop();
+            ui.speedBar->setValue(0);
+            ui.speedBar->setFormat("paused");
+            stoppedBySlider = false;
+            break;
+        case PAUSED:
+            ui.playButton->setChecked(true);
+            ui.playButton->setIcon(pauseIcon);
+            ui.speedBar->setFormat("%p%");
+            statusUpdateTimer->start();
+            checkFinishedTimer->start();
+            break;
     }
 }
 
@@ -253,7 +269,7 @@ void ReplayGui::handleRestart()
 void ReplayGui::statusUpdate()
 {
     ui.speedBar->setValue(round(replayHandler->getCurrentSpeed() * ui.speedBar->maximum()));
-    ui.curSampleNum->setText(QString::number(replayHandler->getCurIndex()));
+    ui.curSampleNum->setText(QString::number(replayHandler->getCurIndex() + 1));
     ui.curTimestamp->setText(replayHandler->getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler->getCurSamplePortName().c_str());
     ui.progressSlider->setSliderPosition(replayHandler->getCurIndex());        
@@ -267,13 +283,9 @@ void ReplayGui::stopPlay()
         replayHandler->setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
         replayHandler->setSampleIndex(ui.intervalSlider->lowerPosition()); // ensure that old span is kept
         replayHandler->setMaxSampleIndex(ui.intervalSlider->upperPosition());
+        changeGUIMode(PLAYING);
+        statusUpdate();
     }
-    ui.playButton->setIcon(playIcon);
-    ui.playButton->setChecked(false);
-    statusUpdateTimer->stop();
-    ui.speedBar->setValue(0);
-    ui.speedBar->setFormat("paused");
-    statusUpdate();
 }
 
 

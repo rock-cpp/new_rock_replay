@@ -27,6 +27,12 @@ public:
 
 };
 
+enum GUI_MODES
+{
+    PAUSED = 0,
+    PLAYING = 1
+};
+
 class ReplayGui : public QMainWindow
 {
     Q_OBJECT
@@ -56,6 +62,8 @@ private:
     double sliderToBox(int val);
     int boxToSlider(double val);
     bool stoppedBySlider;
+    void changeGUIMode(GUI_MODES mode);
+ 
 
     
 public slots:
