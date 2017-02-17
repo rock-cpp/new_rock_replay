@@ -177,22 +177,15 @@ void ReplayHandler::init()
     replayFactor = 1.;
     currentSpeed = replayFactor;
     curIndex = 0;
-    curTimeStamp = "";
-    curSamplePortName = "";
     finished = false;
     playing = false;
     maxIndex = multiIndex->getSize() - 1;
+    replaySample(curIndex, true);
     boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
 }
 
-base::Time ReplayHandler::extractTimeFromStream(size_t index)
-{
-    pocolog_cpp::Index &idx = multiIndex->getSampleStream(index)->getFileIndex();
-    return idx.getSampleTime(multiIndex->getPosInStream(index));
-}
 
-
-bool ReplayHandler::replaySample(size_t index, bool dryRun) const
+bool ReplayHandler::replaySample(size_t index, bool dryRun)
 {
     try 
     {
@@ -201,6 +194,7 @@ bool ReplayHandler::replaySample(size_t index, bool dryRun) const
         if (dryRun || (!dryRun && streamToTask[globalStreamIndex]->replaySample(*inputSt, multiIndex->getPosInStream(index))))
         {
             curSamplePortName = inputSt->getName();
+            curTimeStamp = getTimeStamp(index).toString();
         }
         
         return true;
@@ -234,14 +228,16 @@ void ReplayHandler::replaySamples()
             cond.wait(lock);
             restartReplay = true;
         }
-
+        
         varMut.lock();
         if(curIndex >= maxIndex)
         {
             finished = true;
+            varMut.unlock();
+            playing = false;
             continue;
         }
-
+        
         if(restartReplay)
         {
             systemPlayStartTime = base::Time::now();
@@ -265,9 +261,7 @@ void ReplayHandler::replaySamples()
         lastStamp = curStamp;
         curIndex++;
       
-        curStamp = getTimeStamp(curIndex);
-        curTimeStamp = curStamp.toString();
-        
+        curStamp = getTimeStamp(curIndex);        
 
         if(lastStamp > curStamp)
         {
@@ -306,18 +300,19 @@ void ReplayHandler::replaySamples()
 
 const base::Time ReplayHandler::getTimeStamp(size_t globalIndex)
 {    
-    return extractTimeFromStream(globalIndex);
+    pocolog_cpp::Index &idx = multiIndex->getSampleStream(globalIndex)->getFileIndex();
+    return idx.getSampleTime(multiIndex->getPosInStream(globalIndex));
 }
 
 void ReplayHandler::stop()
 {
-    varMut.unlock();
+    varMut.lock();
     curIndex = 0;
-    curTimeStamp = "";
-    curSamplePortName = "";
     finished = false;
     playing = false;
     restartReplay = true;
+    replaySample(curIndex, true);
+    varMut.unlock();
 }
 
 
@@ -338,7 +333,6 @@ void ReplayHandler::next()
     if(curIndex < maxIndex)
     {
         replaySample(++curIndex, true);
-        curTimeStamp = getTimeStamp(curIndex).toString();
     }
     
 }
@@ -348,7 +342,6 @@ void ReplayHandler::previous()
     if(curIndex > 0)
     {
         replaySample(--curIndex, true);
-        curTimeStamp = getTimeStamp(curIndex).toString();
     }
 }
 
@@ -358,7 +351,6 @@ void ReplayHandler::setSampleIndex(uint index)
     varMut.lock();
     curIndex = index;
     replaySample(curIndex, true); // do a dry run for metadata update
-    curTimeStamp = getTimeStamp(curIndex).toString();
     varMut.unlock();
 }
 
@@ -369,18 +361,31 @@ void ReplayHandler::setMaxSampleIndex(uint index)
     varMut.unlock();
 }
 
+void ReplayHandler::setSpan(uint minIdx, uint maxIdx)
+{
+    varMut.lock();
+    curIndex = minIdx;
+    maxIndex = maxIdx;
+    varMut.unlock();
+}
+
+
 void ReplayHandler::play()
 {
+    varMut.lock();
     if(valid && !playing)
     {
         playing = true;
         restartReplay = true;
         cond.notify_one();
     }
+    varMut.unlock();
 }
 
 void ReplayHandler::pause()
 {
+//     varMut.lock();
     if(valid && playing)
         playing = false;
+//     varMut.unlock();
 }

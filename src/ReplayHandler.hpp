@@ -29,6 +29,7 @@ public:
     
     void setReplayFactor(double factor);
     void setMaxSampleIndex(uint index);
+    void setSpan(uint minIdx, uint maxIdx);
     
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
@@ -49,8 +50,8 @@ private:
     double replayFactor;
     const double minReplayFactor = 1e-5;
     mutable double currentSpeed;
-    mutable std::string curTimeStamp;
-    mutable std::string curSamplePortName;
+    std::string curTimeStamp;
+    std::string curSamplePortName;
     uint curIndex;
     uint maxIndex;
     bool finished;
@@ -65,8 +66,7 @@ private:
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
     
-    base::Time extractTimeFromStream(size_t index);
-    bool replaySample(size_t index, bool dryRun = false) const;
+    bool replaySample(size_t index, bool dryRun = false);
     const base::Time getTimeStamp(size_t globalIndex);
     void init();
     void replaySamples();

@@ -72,7 +72,6 @@ public slots:
     void statusUpdate();
     void setSpeedBox();
     void setSpeedSlider();
-    void handleRestart();
     void forward();
     void backward();
     void progressSliderUpdate();
@@ -81,6 +80,7 @@ public slots:
     void handleSpanSlider();
     void showInfoAbout();
     void showOpenFile();
+    void handleRestart();    
 };
 
 #endif // REPLAY_GUI_H
