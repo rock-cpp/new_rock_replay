@@ -277,6 +277,7 @@ void ReplayHandler::replaySamples()
         base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
         toSleep = logTimeSinceStart - systemTimeSinceStart;
 
+        varMut.unlock();
         if(toSleep.microseconds > 0)
         {
             usleep(toSleep.microseconds);
@@ -290,7 +291,6 @@ void ReplayHandler::replaySamples()
         {
             currentSpeed = logTimeSinceStart.toSeconds() / systemTimeSinceStart.toSeconds();   
         }      
-        varMut.unlock();
     }
 
 }
