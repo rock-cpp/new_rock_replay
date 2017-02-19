@@ -233,8 +233,8 @@ void ReplayHandler::replaySamples()
         if(curIndex >= maxIndex)
         {
             finished = true;
-            varMut.unlock();
             playing = false;
+            varMut.unlock();
             continue;
         }
         
@@ -254,6 +254,7 @@ void ReplayHandler::replaySamples()
         if (!replaySample(curIndex))
         {
             curIndex++;
+            varMut.unlock();
             continue;
         }
      
@@ -275,10 +276,6 @@ void ReplayHandler::replaySamples()
         base::Time logTimeSinceStart = base::Time::fromMicroseconds((curStamp.microseconds - logPlayStartTime.microseconds) / replayFactor);
         base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
         toSleep = logTimeSinceStart - systemTimeSinceStart;
-
-//         std::cout << "Log time since start " << logTimeSinceStart << std::endl;
-//         std::cout << "Sys time since start " << systemTimeSinceStart << std::endl;
-//         std::cout << "To Sleep " << toSleep.microseconds << std::endl;
 
         if(toSleep.microseconds > 0)
         {
@@ -384,8 +381,8 @@ void ReplayHandler::play()
 
 void ReplayHandler::pause()
 {
-//     varMut.lock();
+    varMut.lock();
     if(valid && playing)
         playing = false;
-//     varMut.unlock();
+    varMut.unlock();
 }
