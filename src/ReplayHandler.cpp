@@ -49,7 +49,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             return false;
         }
     
-        RTT::types::TypeInfo* type = ti->type(dataStream->getMetadata().at("rock_cxx_type_name"));
+        RTT::types::TypeInfo* type = ti->type(dataStream->getCXXType());
         if (! type)
         {
             std::cerr << "2 cannot find " << typestr << " in the type info repository" << std::endl;
