@@ -106,11 +106,7 @@ bool LogTask::addStream(const pocolog_cpp::InputDataStream& stream)
     size_t nameStart = stream.getName().find_last_of('.') + 1;
     std::string portName = stream.getName().substr(nameStart, stream.getName().size());
     
-    std::string type = stream.getType()->getName();
-    if(type.size() > 2 && type.substr(type.size() - 2, type.size()) == "_m")
-        type = type.substr(0, type.size() - 2);
-    
-    if(!createReplayPort(portName, type, *handle))
+    if(!createReplayPort(portName, stream.getCXXType(), *handle))
     {
         delete handle;
         throw std::runtime_error("Error, could not create replay port");
