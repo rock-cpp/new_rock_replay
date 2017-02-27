@@ -116,7 +116,7 @@ std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[])
         struct stat file_stat;
         if(stat(argv[i], &file_stat) == -1)
         {
-            std::cerr << "stat error" << std::endl;
+            std::cerr << "stat error: couldn't open folder" << std::endl;
             exit(EXIT_FAILURE);
         }
         
