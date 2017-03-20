@@ -177,13 +177,9 @@ int ReplayGui::boxToSlider(double val)
     {
         return val * 50;
     }
-    else if(val <= 1000)
-    {
-        return (val / 40.0) + 50;
-    }
     else
     {
-        return (val / 400.0) + 75;
+        return val / 2.0 + 50;
     }
 }
 
@@ -193,13 +189,9 @@ double ReplayGui::sliderToBox(int val)
     {
         return val / 50.0;
     }
-    else if(val <= 75)
-    {
-        return (val - 50) * 40.0;
-    }
     else
     {
-        return (val - 75) * 400.0;
+        return (val - 50) * 2.0;
     }
 }
 
