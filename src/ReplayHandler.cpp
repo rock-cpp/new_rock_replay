@@ -10,13 +10,6 @@
 ReplayHandler::ReplayHandler(int argc, char** argv)
 {
     RTT::corba::TaskContextServer::InitOrb(argc, argv);
-
-    char *installDir = getenv("AUTOPROJ_CURRENT_ROOT");
-    
-    if(!installDir)
-    {
-        throw std::runtime_error("Error, could not find AUTOPROJ_CURRENT_ROOT env.sh not sourced ?");
-    }
     
     // load basic typekits
     orocos_cpp::PluginHelper::loadTypekitAndTransports("orocos");
@@ -43,12 +36,12 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             std::cerr << "cannot find " << typestr << " in the type info repository" << std::endl;
             return false;
         }
-
+        
         if(!orocos_cpp::PluginHelper::loadTypekitAndTransports(tkName))
         {
             return false;
         }
-    
+   
         RTT::types::TypeInfo* type = ti->type(dataStream->getCXXType());
         if (! type)
         {
