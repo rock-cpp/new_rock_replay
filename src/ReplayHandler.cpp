@@ -19,7 +19,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     }
     
     // load basic typekits
-    orocos_cpp::PluginHelper::loadAllPluginsInDir(std::string(installDir) + "/install/lib/orocos/gnulinux/types/");
+    orocos_cpp::PluginHelper::loadTypekitAndTransports("orocos");
     
     multiIndex = new pocolog_cpp::MultiFileIndex();    
     
