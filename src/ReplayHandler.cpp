@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <rtt/transports/corba/CorbaDispatcher.hpp>
+#include <rtt/typelib/TypelibMarshallerBase.hpp>
 
 
 ReplayHandler::ReplayHandler(int argc, char** argv)
@@ -19,6 +20,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     orocos_cpp::TypeRegistry reg;
     reg.loadTypelist();
     RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
+    
 
     multiIndex->registerStreamCheck([&](pocolog_cpp::Stream *st){
         std::cout << "Checking " << st->getName() << std::endl;
@@ -36,11 +38,13 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             std::cerr << "cannot find " << typestr << " in the type info repository" << std::endl;
             return false;
         }
+
         
         if(!orocos_cpp::PluginHelper::loadTypekitAndTransports(tkName))
         {
             return false;
         }
+
    
         RTT::types::TypeInfo* type = ti->type(dataStream->getCXXType());
         if (! type)
@@ -49,10 +53,23 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             return false;
         }
         
+        orogen_transports::TypelibMarshallerBase* transport =
+            dynamic_cast<orogen_transports::TypelibMarshallerBase*>(type->getProtocol(orogen_transports::TYPELIB_MARSHALLER_ID));
+            
+        const Typelib::Type *t1 = dataStream->getType();
+        const Typelib::Type *t2 = transport->getRegistry().get(transport->getMarshallingType());
+        
+        if(!t1 || !t2 || !t1->isSame(*t2))
+        {
+            std::cerr << "local and marshalled type mismatch: " << dataStream->getType()->getName() << " " << transport->getMarshallingType() << std::endl;   
+            return false;
+        }
+        
         return true;
         
     }
     );
+
     
     multiIndex->createIndex(parseFilenames(argc, argv));
     streamToTask.resize(multiIndex->getAllStreams().size());
