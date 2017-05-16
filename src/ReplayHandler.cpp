@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <rtt/transports/corba/CorbaDispatcher.hpp>
 #include <rtt/typelib/TypelibMarshallerBase.hpp>
+#include <typelib/typedisplay.hh>
 
 
 ReplayHandler::ReplayHandler(int argc, char** argv)
@@ -62,6 +63,11 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         if(!t1 || !t2 || !t1->isSame(*t2))
         {
             std::cerr << "local and marshalled type mismatch: " << dataStream->getType()->getName() << " " << transport->getMarshallingType() << std::endl;   
+            std::cout << "type a:" << std::endl;
+            Typelib::TypeDisplayVisitor tt(std::cout, "    ");
+            tt.apply(*t1);
+            std::cout << std::endl << "type b:" << std::endl;
+            tt.apply(*t2);
             return false;
         }
         
