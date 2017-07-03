@@ -57,23 +57,6 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             return false;
         }
         
-        orogen_transports::TypelibMarshallerBase* transport =
-            dynamic_cast<orogen_transports::TypelibMarshallerBase*>(type->getProtocol(orogen_transports::TYPELIB_MARSHALLER_ID));
-            
-        const Typelib::Type *t1 = dataStream->getType();
-        const Typelib::Type *t2 = transport->getRegistry().get(transport->getMarshallingType());
-        
-        if(!t1 || !t2 || !t1->isSame(*t2))
-        {
-            std::cerr << "local and marshalled type mismatch: " << dataStream->getType()->getName() << " " << transport->getMarshallingType() << std::endl;   
-            std::cout << "type a:" << std::endl;
-            Typelib::TypeDisplayVisitor tt(std::cout, "    ");
-            tt.apply(*t1);
-            std::cout << std::endl << "type b:" << std::endl;
-            tt.apply(*t2);
-            return false;
-        }
-        
         return true;
         
     }
