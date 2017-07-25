@@ -7,14 +7,10 @@
 #include <rtt/transports/corba/CorbaDispatcher.hpp>
 #include <rtt/typelib/TypelibMarshallerBase.hpp>
 #include <typelib/typedisplay.hh>
-#include <typelib/pluginmanager.hh>
-
 
 ReplayHandler::ReplayHandler(int argc, char** argv)
 {
     RTT::corba::TaskContextServer::InitOrb(argc, argv);
-    
-    Typelib::PluginManager::self manager;
     
     // load basic typekits
     orocos_cpp::PluginHelper::loadTypekitAndTransports("orocos");
