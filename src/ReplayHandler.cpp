@@ -108,10 +108,11 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         streamToTask[gIdx] = task;
     }
 
-    valid = !multiIndex->getAllStreams().empty() && !fileNames.empty();
+    valid = !multiIndex->getAllStreams().empty() && !fileNames.empty() && multiIndex->getSize() > 0;
     if(!valid)
     {
         std::cerr << "empty streams loaded" << std::endl;
+        exit(0);
     }
     else
     {
