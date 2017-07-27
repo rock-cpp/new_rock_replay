@@ -303,6 +303,10 @@ void ReplayHandler::replaySamples()
         toSleep = logTimeSinceStart - systemTimeSinceStart;
 
         varMut.unlock();
+        
+        if(!playing)
+            continue;
+        
         if(toSleep.microseconds > 0)
         {
             usleep(toSleep.microseconds);
@@ -340,6 +344,7 @@ void ReplayHandler::stop()
 
 void ReplayHandler::setReplayFactor(double factor)
 {
+    varMut.lock();
     this->replayFactor = factor;
     if (this->replayFactor < minReplayFactor)
     {
@@ -347,6 +352,7 @@ void ReplayHandler::setReplayFactor(double factor)
     }
     
     restartReplay = true;
+    varMut.unlock();
 }
 
 
@@ -395,7 +401,7 @@ void ReplayHandler::setSpan(uint minIdx, uint maxIdx)
 void ReplayHandler::play()
 {
     varMut.lock();
-    if(valid && !playing)
+    if(valid)
     {
         playing = true;
         restartReplay = true;
@@ -407,7 +413,6 @@ void ReplayHandler::play()
 void ReplayHandler::pause()
 {
     varMut.lock();
-    if(valid && playing)
-        playing = false;
+    playing = false;
     varMut.unlock();
 }
