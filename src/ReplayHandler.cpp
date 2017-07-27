@@ -298,7 +298,7 @@ void ReplayHandler::replaySamples()
         base::Time curTime = base::Time::now();
         
         //hm, factor... should it not be * replayFactor then ?
-        int64_t tSinceStart = curTime.microseconds - logPlayStartTime.microseconds;
+        int64_t tSinceStart = curStamp.microseconds - logPlayStartTime.microseconds;
         tSinceStart = std::max<int64_t>(0, tSinceStart);
         base::Time logTimeSinceStart = base::Time::fromMicroseconds(tSinceStart / replayFactor);
         base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
