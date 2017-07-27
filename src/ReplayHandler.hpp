@@ -7,6 +7,7 @@
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <regex>
 
 #include "LogTask.hpp"
 
@@ -70,6 +71,6 @@ private:
     const base::Time getTimeStamp(size_t globalIndex);
     void init();
     void replaySamples();
-    std::vector<std::string> parseFilenames(int argc, char* argv[]);
+    std::vector<std::string> parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps);
     
 };

@@ -1,4 +1,5 @@
 #include "ReplayHandler.hpp"
+#include <boost/algorithm/string.hpp>
 #include <orocos_cpp/TypeRegistry.hpp>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -7,6 +8,7 @@
 #include <rtt/transports/corba/CorbaDispatcher.hpp>
 #include <rtt/typelib/TypelibMarshallerBase.hpp>
 #include <typelib/typedisplay.hh>
+
 
 ReplayHandler::ReplayHandler(int argc, char** argv)
 {
@@ -20,13 +22,28 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     orocos_cpp::TypeRegistry reg;
     reg.loadTypelist();
     RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
-    
+
+    std::vector<std::regex> regExps;
+    std::vector<std::string> fileNames = parseFilenames(argc, argv, regExps);
 
     multiIndex->registerStreamCheck([&](pocolog_cpp::Stream *st){
         std::cout << "Checking " << st->getName() << std::endl;
         pocolog_cpp::InputDataStream *dataStream = dynamic_cast<pocolog_cpp::InputDataStream *>(st);
         if(!dataStream)
         {
+            return false;
+        }
+        
+        bool matches = regExps.empty();
+        for(std::regex exp : regExps)
+        {
+            if(std::regex_search(dataStream->getName(), exp))
+                matches = true;
+        }
+        
+        if(!matches)
+        {
+            std::cout << "skipping non-whitelisted stream " << dataStream->getName() << std::endl;
             return false;
         }
         
@@ -58,8 +75,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     }
     );
 
-    
-    multiIndex->createIndex(parseFilenames(argc, argv));
+    multiIndex->createIndex(fileNames);
     streamToTask.resize(multiIndex->getAllStreams().size());
 
     for(pocolog_cpp::Stream *st : multiIndex->getAllStreams())
@@ -92,7 +108,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
         streamToTask[gIdx] = task;
     }
 
-    valid = !multiIndex->getAllStreams().empty();
+    valid = !multiIndex->getAllStreams().empty() && !fileNames.empty();
     if(!valid)
     {
         std::cerr << "empty streams loaded" << std::endl;
@@ -105,12 +121,22 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
 }
 
 
-std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[])
+std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps)
 {
     std::vector<std::string> filenames;
     
     for(int i = 1; i < argc; i++)
     {
+        std::string argv2String(argv[i]);
+        std::string whiteList = "--white-list=";
+        std::size_t pos = argv2String.find(whiteList);
+        if(pos != std::string::npos) 
+        {
+            std::string params = argv2String.substr(whiteList.length(), argv2String.length());
+            boost::split(regExps, params, boost::is_any_of(","));
+            continue;
+        }
+        
         struct stat file_stat;
         if(stat(argv[i], &file_stat) == -1)
         {
