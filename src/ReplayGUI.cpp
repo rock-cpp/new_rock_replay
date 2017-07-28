@@ -110,7 +110,8 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     {
         delete replayHandler;
     }
-    replayHandler = new ReplayHandler(argc, argv);    
+    replayHandler = new ReplayHandler();  
+    replayHandler->loadStreams(argc, argv, ReplayHandler::MATCH_MODE::REGEX);
     replayHandler->setReplayFactor(ui.speedBox->value());
     
     // progress bar

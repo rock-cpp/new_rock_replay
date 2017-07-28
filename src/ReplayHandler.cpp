@@ -10,9 +10,9 @@
 #include <typelib/typedisplay.hh>
 
 
-ReplayHandler::ReplayHandler(int argc, char** argv)
+void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
 {
-    RTT::corba::TaskContextServer::InitOrb(argc, argv);
+    RTT::corba::TaskContextServer::InitOrb(argc, argv);    
     
     // load basic typekits
     orocos_cpp::PluginHelper::loadTypekitAndTransports("orocos");
@@ -34,11 +34,20 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
             return false;
         }
         
-        bool matches = regExps.empty();
-        for(std::regex exp : regExps)
+        bool matches;
+        switch(mode)
         {
-            if(std::regex_search(dataStream->getName(), exp))
-                matches = true;
+            case REGEX:
+                matches = regExps.empty();
+                for(std::regex exp : regExps)
+                {
+                    if(std::regex_search(dataStream->getName(), exp))
+                        matches = true;
+                }
+                break;
+            case WHITELIST:
+                matches = whiteList.find(dataStream->getName()) != whiteList.end();
+                break;
         }
         
         if(!matches)
@@ -118,7 +127,7 @@ ReplayHandler::ReplayHandler(int argc, char** argv)
     {
         init();
     }
-    
+
 }
 
 

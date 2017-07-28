@@ -8,6 +8,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <regex>
+#include <set>
 
 #include "LogTask.hpp"
 
@@ -16,9 +17,14 @@ class ReplayHandler
 {
     
 public:
-    ReplayHandler(int argc, char** argv);
+    ReplayHandler() = default;
     ~ReplayHandler();
    
+    enum MATCH_MODE
+    {
+        REGEX = 0,
+        WHITELIST
+    };
     
     void stop();
     void play();
@@ -32,6 +38,8 @@ public:
     void setMaxSampleIndex(uint index);
     void setSpan(uint minIdx, uint maxIdx);
     
+    void loadStreams(int argc, char** argv, MATCH_MODE mode);
+    inline void pushStream(const std::string streamName) { whiteList.insert(streamName); };
     
     inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
     inline const std::string getCurTimeStamp() { return curTimeStamp; };
@@ -66,6 +74,7 @@ private:
     std::map<std::string, LogTask *> logTasks;
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
+    std::set<std::string> whiteList;
     
     bool replaySample(size_t index, bool dryRun = false);
     const base::Time getTimeStamp(size_t globalIndex);
