@@ -1,21 +1,4 @@
 find_package(Threads)
-
-rock_library(rock_replay
-    SOURCES ReplayHandler.cpp LogTask.cpp
-    HEADERS ReplayHandler.hpp LogTask.hpp
-    DEPS_PKGCONFIG 
-        orocos_cpp
-        pocolog_cpp
-        rtt_typelib-${OROCOS_TARGET}
-        orocos-rtt-${OROCOS_TARGET}
-        orocos-rtt-mqueue-${OROCOS_TARGET}
-        orocos-rtt-corba-${OROCOS_TARGET}        
-)
-
-target_link_libraries(rock_replay pthread)
-
-
-
 find_package(Qt4 REQUIRED)
 find_path(QWT_INCLUDE_DIR
     NAMES qwt_plot.h
@@ -34,26 +17,45 @@ INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
 add_subdirectory(ext)
 include_directories(ext)
 
-rock_executable(rock-replay2 
-    SOURCES
-        Main.cpp
+rock_library(rock_replay
+    SOURCES ReplayHandler.cpp LogTask.cpp
         ReplayGUI.cpp
         ${VIZ_RESC}
-    HEADERS
-        ReplayGUI.h
     MOC
         ReplayGUI.h
-    DEPS_PKGCONFIG
+    HEADERS 
+        ReplayHandler.hpp 
+        LogTask.hpp
+        ReplayGUI.h
+    DEPS_PKGCONFIG 
+        orocos_cpp
+        pocolog_cpp
+        rtt_typelib-${OROCOS_TARGET}
+        orocos-rtt-${OROCOS_TARGET}
+        orocos-rtt-mqueue-${OROCOS_TARGET}
+        orocos-rtt-corba-${OROCOS_TARGET}
         QtCore
         QtGui
         vizkit3d
     DEPS
-        rock_replay
         span_slider
     UI
         main.ui
 )
 
-TARGET_LINK_LIBRARIES(rock-replay2 ${QWT_LIBRARIES})
+target_link_libraries(rock_replay pthread)
+TARGET_LINK_LIBRARIES(rock_replay ${QWT_LIBRARIES})
+
+install(FILES ${CMAKE_BINARY_DIR}/src/ui_main.h DESTINATION include/rock_replay/)
+
+
+
+rock_executable(rock-replay2 
+    SOURCES
+        Main.cpp
+    DEPS
+        rock_replay
+)
+
 
 
