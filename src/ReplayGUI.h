@@ -41,6 +41,7 @@ public:
     ReplayGui(QMainWindow *parent = 0);
     ~ReplayGui();
     
+    void initReplayHandler(ReplayHandler *replayHandler, const QString &title);
     void initReplayHandler(int argc, char* argv[]);
     void updateTaskView();
 

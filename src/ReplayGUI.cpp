@@ -103,15 +103,10 @@ ReplayGui::~ReplayGui()
     delete replayHandler;
 }
 
-
-void ReplayGui::initReplayHandler(int argc, char* argv[])
+void ReplayGui::initReplayHandler(ReplayHandler* replayHandler, const QString &title)
 {
-    if(replayHandler)
-    {
-        delete replayHandler;
-    }
-    replayHandler = new ReplayHandler();  
-    replayHandler->loadStreams(argc, argv, ReplayHandler::MATCH_MODE::REGEX);
+    this->replayHandler = replayHandler;
+    
     replayHandler->setReplayFactor(ui.speedBox->value());
     
     // progress bar
@@ -129,19 +124,37 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
     
     
     // window title
+    this->setWindowTitle(title);
+    statusUpdate();
+}
+
+
+void ReplayGui::initReplayHandler(int argc, char* argv[])
+{
+    if(replayHandler)
+    {
+        delete replayHandler;
+    }
+    replayHandler = new ReplayHandler();  
+    replayHandler->loadStreams(argc, argv, ReplayHandler::MATCH_MODE::REGEX);
+    
+    QString title;
+    // window title
     switch(argc)
     {
         case 1:
-            this->setWindowTitle("Rock-Replay");
+            title = "Rock-Replay";
             break;
         case 2:
-            this->setWindowTitle(QString(argv[1]));
+            title = QString(argv[1]);
             break;
         default:
-            this->setWindowTitle(QString("Multi Logfile Replay"));
+            title = QString("Multi Logfile Replay");
             break;
     }        
-    statusUpdate();
+
+    
+    initReplayHandler(replayHandler, title);
 }
 
 
