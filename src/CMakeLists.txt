@@ -23,10 +23,12 @@ rock_library(rock_replay
         ${VIZ_RESC}
     MOC
         ReplayGUI.h
+        Main.hpp
     HEADERS 
         ReplayHandler.hpp 
         LogTask.hpp
         ReplayGUI.h
+        Main.hpp
     DEPS_PKGCONFIG 
         orocos_cpp
         pocolog_cpp

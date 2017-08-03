@@ -10,23 +10,6 @@
 #include "ui_main.h"
 
 
-class TreeViewRootItem : public QStandardItem
-{
-private:
-    LogTask *logTask;
-    
-public:
-    TreeViewRootItem(LogTask *logTask, const std::string &taskName);
-    virtual ~TreeViewRootItem();
-    
-    LogTask *getLogTask()
-    {
-        return logTask;
-    }
-    
-
-};
-
 enum GUI_MODES
 {
     PAUSED = 0,
@@ -38,13 +21,16 @@ class ReplayGui : public QMainWindow
     Q_OBJECT
 
 public:
-    ReplayGui(QMainWindow *parent = 0);
+    ReplayGui(std::function<void(QStandardItemModel*, ReplayHandler*)> updateTaskView, QMainWindow *parent = 0);
     ~ReplayGui();
     
     void initReplayHandler(ReplayHandler *replayHandler, const QString &title);
     void initReplayHandler(int argc, char* argv[]);
-    void updateTaskView();
-
+    inline QStandardItemModel* getTasksModel() { return tasksModel; };
+    inline Ui::MainWindow& getMainWindow() { return ui; };
+    inline ReplayHandler* getReplayHandler() { return replayHandler; };
+    inline void updateTaskView() { updateTaskViewCallback(getTasksModel(), getReplayHandler()); };
+    
 private:
     Ui::MainWindow ui;
     ReplayHandler *replayHandler;
@@ -64,7 +50,8 @@ private:
     int boxToSlider(double val);
     bool stoppedBySlider;
     void changeGUIMode(GUI_MODES mode);
- 
+
+    std::function<void(QStandardItemModel*, ReplayHandler*)> updateTaskViewCallback;
 
     
 public slots:
@@ -77,7 +64,6 @@ public slots:
     void backward();
     void progressSliderUpdate();
     void handleProgressSliderPressed();
-    void handleCheckedChanged(QStandardItem *item);
     void handleSpanSlider();
     void showInfoAbout();
     void showOpenFile();
