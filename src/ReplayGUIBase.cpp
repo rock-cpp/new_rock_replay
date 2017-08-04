@@ -149,6 +149,15 @@ double ReplayGuiBase::sliderToBox(int val)
     }
 }
 
+void ReplayGuiBase::shiftAToB()
+{
+    int upper = ui.intervalSlider->upperPosition();
+    ui.intervalSlider->setLowerPosition(upper + 1);
+    ui.intervalSlider->setUpperPosition(ui.intervalSlider->maximum());
+    replayHandler->setSpan(ui.intervalSlider->lowerPosition(), ui.intervalSlider->upperPosition());
+    statusUpdate();
+}
+
 
 
 // #######################################

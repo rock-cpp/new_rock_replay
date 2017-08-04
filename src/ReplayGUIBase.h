@@ -34,6 +34,9 @@ protected:
     
     // models
     QStandardItemModel *tasksModel;
+    
+    void shiftAToB();
+    
 
 private:    
     // icons
