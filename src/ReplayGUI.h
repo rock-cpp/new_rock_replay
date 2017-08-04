@@ -1,73 +1,43 @@
-#ifndef REPLAY_GUI_H
-#define REPLAY_GUI_H
+#include "ReplayGUIBase.h"
 
-#include "ReplayHandler.hpp"
-
-#include <QMainWindow>
-#include <QStandardItemModel>
-#include <QTimer>
-
-#include "ui_main.h"
-
-
-enum GUI_MODES
+class ReplayGui : public ReplayGuiBase
 {
-    PAUSED = 0,
-    PLAYING = 1
-};
-
-class ReplayGui : public QMainWindow
-{
-    Q_OBJECT
 
 public:
-    ReplayGui(std::function<void(QStandardItemModel*, ReplayHandler*)> updateTaskView, QMainWindow *parent = 0);
-    ~ReplayGui();
+    ReplayGui();
+    ~ReplayGui() = default;
     
-    void initReplayHandler(ReplayHandler *replayHandler, const QString &title);
-    void initReplayHandler(int argc, char* argv[]);
-    inline QStandardItemModel* getTasksModel() { return tasksModel; };
-    inline Ui::MainWindow& getMainWindow() { return ui; };
-    inline ReplayHandler* getReplayHandler() { return replayHandler; };
-    inline void updateTaskView() { updateTaskViewCallback(getTasksModel(), getReplayHandler()); };
+    void updateTaskView() override;
+    void handleItemChanged(QStandardItem *item) override;
     
-private:
-    Ui::MainWindow ui;
-    ReplayHandler *replayHandler;
-    
-    // models
-    QStandardItemModel *tasksModel;
-    
-    // icons
-    QIcon playIcon, pauseIcon;
-    
-    // timers
-    QTimer *statusUpdateTimer;
-    QTimer *checkFinishedTimer;
-    
-    
-    double sliderToBox(int val);
-    int boxToSlider(double val);
-    bool stoppedBySlider;
-    void changeGUIMode(GUI_MODES mode);
-
-    std::function<void(QStandardItemModel*, ReplayHandler*)> updateTaskViewCallback;
-
-    
-public slots:
-    void togglePlay();
-    void stopPlay();
-    void statusUpdate();
-    void setSpeedBox();
-    void setSpeedSlider();
-    void forward();
-    void backward();
-    void progressSliderUpdate();
-    void handleProgressSliderPressed();
-    void handleSpanSlider();
-    void showInfoAbout();
-    void showOpenFile();
-    void handleRestart();    
 };
 
-#endif // REPLAY_GUI_H
+
+
+class TreeViewItem : public QStandardItem
+{
+    
+private:
+    LogTask *logTask;
+    
+public:
+    TreeViewItem(LogTask *logTask, const std::string &taskName)
+        : QStandardItem(QString(taskName.c_str()))
+        , logTask(logTask)
+    {}
+    
+    ~TreeViewItem()
+    {
+        while(this->rowCount() > 0)
+        {
+            QList<QStandardItem*> rows = this->takeRow(0);
+            for(QStandardItem *item : rows)
+                delete item;
+        }
+    }
+    
+    LogTask *getLogTask()
+    {
+        return logTask;
+    }
+};

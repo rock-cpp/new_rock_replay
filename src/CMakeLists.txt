@@ -20,13 +20,16 @@ include_directories(ext)
 rock_library(rock_replay
     SOURCES ReplayHandler.cpp LogTask.cpp
         ReplayGUI.cpp
+        ReplayGUIBase.cpp
         ${VIZ_RESC}
     MOC
         ReplayGUI.h
+        ReplayGUIBase.h
     HEADERS 
         ReplayHandler.hpp 
         LogTask.hpp
         ReplayGUI.h
+        ReplayGUIBase.h
     DEPS_PKGCONFIG 
         orocos_cpp
         pocolog_cpp
@@ -53,10 +56,6 @@ install(FILES ${CMAKE_BINARY_DIR}/src/ui_main.h DESTINATION include/rock_replay/
 rock_executable(rock-replay2 
     SOURCES
         Main.cpp
-    HEADERS
-        Main.hpp
-    MOC
-        Main.hpp
     DEPS
         rock_replay
 )
