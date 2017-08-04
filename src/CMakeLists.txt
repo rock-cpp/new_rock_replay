@@ -18,7 +18,9 @@ add_subdirectory(ext)
 include_directories(ext)
 
 rock_library(rock_replay
-    SOURCES ReplayHandler.cpp LogTask.cpp
+    SOURCES 
+        ReplayHandler.cpp 
+        LogTask.cpp
         ReplayGUI.cpp
         ReplayGUIBase.cpp
         ${VIZ_RESC}
