@@ -218,6 +218,17 @@ void ReplayHandler::init()
     boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
 }
 
+const base::Time ReplayHandler::getMinIdxTimeStamp()
+{
+    return getTimeStamp(curIndex);
+}
+
+const base::Time ReplayHandler::getMaxIdxTimeStamp()
+{
+    return getTimeStamp(maxIndex);
+}
+
+
 
 bool ReplayHandler::replaySample(size_t index, bool dryRun)
 {

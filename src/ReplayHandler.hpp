@@ -53,6 +53,8 @@ public:
     inline const bool isPlaying() { return playing; };
     inline void restart() { restartReplay = true; };
     
+    const base::Time getMinIdxTimeStamp();
+    const base::Time getMaxIdxTimeStamp();
     
 private:  
     bool restartReplay;
@@ -75,9 +77,9 @@ private:
     std::vector<LogTask *> streamToTask;
     pocolog_cpp::MultiFileIndex *multiIndex;
     std::set<std::string> whiteList;
-    
-    bool replaySample(size_t index, bool dryRun = false);
+        
     const base::Time getTimeStamp(size_t globalIndex);
+    bool replaySample(size_t index, bool dryRun = false);
     void init();
     void replaySamples();
     std::vector<std::string> parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps);
