@@ -27,7 +27,6 @@ public:
     void initReplayHandler(ReplayHandler *replayHandler, const QString &title);
     void initReplayHandler(int argc, char* argv[]);    
     virtual void updateTaskView() = 0;
-    virtual void handleItemChanged(QStandardItem *item) = 0;
     
 protected:
     Ui::MainWindow ui;
@@ -52,6 +51,7 @@ private:
 
     
 public slots:
+    virtual void handleItemChanged(QStandardItem *item) = 0;
     void togglePlay();
     void stopPlay();
     void statusUpdate();
