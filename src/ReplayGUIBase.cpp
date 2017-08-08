@@ -155,6 +155,7 @@ void ReplayGuiBase::shiftAToB()
     ui.intervalSlider->setLowerPosition(upper + 1);
     ui.intervalSlider->setUpperPosition(ui.intervalSlider->maximum());
     replayHandler->setSpan(ui.intervalSlider->lowerPosition(), ui.intervalSlider->upperPosition());
+    replayHandler->next();
     statusUpdate();
 }
 
