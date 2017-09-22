@@ -82,6 +82,7 @@ private:
     bool replaySample(size_t index, bool dryRun = false);
     void init();
     void replaySamples();
+    bool checkSampleIdx();
     std::vector<std::string> parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps);
     
 };

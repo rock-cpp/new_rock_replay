@@ -80,7 +80,7 @@ void ReplayGuiBase::initReplayHandler(ReplayHandler* replayHandler, const QStrin
     ui.progressSlider->setMaximum(replayHandler->getMaxIndex());
     
     // labels
-    ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex() + 1)).c_str()));
+    ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler->getMaxIndex())).c_str()));
     
     // span slider
     ui.intervalSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
@@ -228,7 +228,7 @@ void ReplayGuiBase::changeGUIMode(GUI_MODES mode)
 void ReplayGuiBase::statusUpdate()
 {
     ui.speedBar->setValue(round(replayHandler->getCurrentSpeed() * ui.speedBar->maximum()));
-    ui.curSampleNum->setText(QString::number(replayHandler->getCurIndex() + 1));
+    ui.curSampleNum->setText(QString::number(replayHandler->getCurIndex()));
     ui.curTimestamp->setText(replayHandler->getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler->getCurSamplePortName().c_str());
     ui.progressSlider->setSliderPosition(replayHandler->getCurIndex());        

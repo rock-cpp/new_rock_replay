@@ -252,13 +252,25 @@ bool ReplayHandler::replaySample(size_t index, bool dryRun)
     return false;
 }
 
+bool ReplayHandler::checkSampleIdx()
+{
+    if(curIndex > maxIndex)
+    {
+        finished = true;
+        playing = false;
+        varMut.unlock();
+        return true;
+    }
+    return false;
+}
+
+
 void ReplayHandler::replaySamples()
 {   
     boost::unique_lock<boost::mutex> lock(mut);
     
     restartReplay = true;
     
-    base::Time lastStamp;
     base::Time curStamp;
     base::Time toSleep;
 
@@ -275,13 +287,10 @@ void ReplayHandler::replaySamples()
         }
         
         varMut.lock();
-        if(curIndex >= maxIndex)
-        {
-            finished = true;
-            playing = false;
-            varMut.unlock();
+        
+        if(checkSampleIdx())
             continue;
-        }
+        
         
         if(restartReplay)
         {
@@ -292,27 +301,21 @@ void ReplayHandler::replaySamples()
             logPlayStartTime = curStamp;
             restartReplay = false;
         }
-
+        
         //TODO check if chronological ordering is right
         //TODO if logging for port is not selected, skip cur index
         // (allow higher replayFactor)
-        if (!replaySample(curIndex))
+        if (!replaySample(curIndex++))
         {
-            curIndex++;
             varMut.unlock();
             continue;
         }
-     
         
-        lastStamp = curStamp;
-        curIndex++;
-      
-        curStamp = getTimeStamp(curIndex);        
-
-        if(lastStamp > curStamp)
-        {
-            std::cout << "Warning: invalid sample order curStamp " << curStamp <<  " Last Stamp " << lastStamp << std::endl;
-        }
+        if(checkSampleIdx())
+            continue;
+        
+        replaySample(curIndex, true);
+        curStamp = getTimeStamp(curIndex);    
 
         //hm, also expensive, is there a way to reduce this ?
         base::Time curTime = base::Time::now();
@@ -380,19 +383,23 @@ void ReplayHandler::setReplayFactor(double factor)
 
 void ReplayHandler::next()
 {
+    varMut.lock();
     if(curIndex < maxIndex)
     {
         replaySample(++curIndex, true);
     }
+    varMut.unlock();
     
 }
 
 void ReplayHandler::previous()
 {
+    varMut.lock();
     if(curIndex > 0)
     {
         replaySample(--curIndex, true);
     }
+    varMut.unlock();
 }
 
 
