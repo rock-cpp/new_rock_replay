@@ -69,7 +69,7 @@ private:
     bool valid;
     
     bool playing;
-    boost::condition_variable cond;
+    boost::condition_variable cond, factorChangeCond;
     boost::mutex mut;
     boost::mutex varMut;
     

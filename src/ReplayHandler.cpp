@@ -214,7 +214,7 @@ void ReplayHandler::init()
     finished = false;
     playing = false;
     maxIndex = multiIndex->getSize() - 1;
-    replaySample(curIndex, true);
+    replaySample(curIndex, true);       
     boost::thread(boost::bind(&ReplayHandler::replaySamples, boost::ref(*this)));
 }
 
@@ -334,7 +334,7 @@ void ReplayHandler::replaySamples()
         
         if(toSleep.microseconds > 0)
         {
-            usleep(toSleep.microseconds);
+            factorChangeCond.timed_wait(lock, boost::posix_time::microseconds(toSleep.microseconds));
             currentSpeed = replayFactor;
         }
         else if(toSleep.microseconds == 0)
@@ -375,8 +375,8 @@ void ReplayHandler::setReplayFactor(double factor)
     {
         this->replayFactor = minReplayFactor;
     }
-    
     restartReplay = true;
+    factorChangeCond.notify_one();
     varMut.unlock();
 }
 
