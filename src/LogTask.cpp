@@ -21,10 +21,10 @@ public:
 LogTask::LogTask(const std::string& name)
 {
     std::string correctedName(name);
-    
-    if(correctedName.size() && correctedName[0] == '/')
+    size_t pos = correctedName.find('/');
+    if(correctedName.size() && pos != std::string::npos)
     {
-        correctedName = correctedName.substr(1, correctedName.size());
+        correctedName = correctedName.substr(pos + 1, correctedName.size());
     }
     
     task = new RTT::TaskContext(correctedName);
