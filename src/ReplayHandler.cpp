@@ -386,7 +386,7 @@ void ReplayHandler::next()
     varMut.lock();
     if(curIndex < maxIndex)
     {
-        replaySample(++curIndex, true);
+        replaySample(++curIndex);
     }
     varMut.unlock();
     
@@ -397,7 +397,7 @@ void ReplayHandler::previous()
     varMut.lock();
     if(curIndex > 0)
     {
-        replaySample(--curIndex, true);
+        replaySample(--curIndex);
     }
     varMut.unlock();
 }
