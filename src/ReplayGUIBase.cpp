@@ -52,6 +52,8 @@ ReplayGuiBase::ReplayGuiBase(QMainWindow *parent)
     QObject::connect(ui.stopButton, SIGNAL(clicked()), this, SLOT(stopPlay()));
     QObject::connect(ui.forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
     QObject::connect(ui.backwardButton, SIGNAL(clicked()), this, SLOT(backward()));
+    QObject::connect(ui.intervalAButton, SIGNAL(clicked()), this, SLOT(setIntervalA()));
+    QObject::connect(ui.intervalBButton, SIGNAL(clicked()), this, SLOT(setIntervalB()));
     QObject::connect(statusUpdateTimer, SIGNAL(timeout()), this, SLOT(statusUpdate()));
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
     QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
@@ -164,6 +166,26 @@ void ReplayGuiBase::shiftAToB()
 // #######################################
 // ######### SLOT IMPLEMENTATION #########
 // #######################################
+
+
+void ReplayGuiBase::setIntervalA()
+{
+    if(!replayHandler->isPlaying())
+    {
+        ui.intervalSlider->setLowerPosition(ui.progressSlider->sliderPosition());
+        replayHandler->setSpan(ui.intervalSlider->lowerPosition(), ui.intervalSlider->upperPosition());
+    }
+}
+
+void ReplayGuiBase::setIntervalB()
+{
+    if(!replayHandler->isPlaying())
+    {
+        ui.intervalSlider->setUpperPosition(ui.progressSlider->sliderPosition());
+        replayHandler->setSpan(ui.intervalSlider->lowerPosition(), ui.intervalSlider->upperPosition());
+    }
+}
+
 
 void ReplayGuiBase::togglePlay()
 {

@@ -68,6 +68,8 @@ public slots:
     void showInfoAbout();
     void showOpenFile();
     void handleRestart();    
+    void setIntervalA();
+    void setIntervalB();
 };
 
 #endif // REPLAY_GUI_H
