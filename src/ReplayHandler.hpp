@@ -83,6 +83,6 @@ private:
     void init();
     void replaySamples();
     bool checkSampleIdx();
-    std::vector<std::string> parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps);
+    std::vector<std::string> parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps, std::map<std::string, std::string>& logfiles2Prefix);
     
 };

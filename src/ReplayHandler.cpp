@@ -24,7 +24,8 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
     RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
 
     std::vector<std::regex> regExps;
-    std::vector<std::string> fileNames = parseFilenames(argc, argv, regExps);
+    std::map<std::string, std::string> logfiles2Prefix;
+    std::vector<std::string> fileNames = parseFilenames(argc, argv, regExps, logfiles2Prefix);
 
     multiIndex->registerStreamCheck([&](pocolog_cpp::Stream *st){
         std::cout << "Checking " << st->getName() << std::endl;
@@ -96,9 +97,14 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
         std::string taskName = st->getName();
         taskName = taskName.substr(0, taskName.find_last_of('.'));
         
+        if(logfiles2Prefix.find(inputSt->getFileStream().getFileName()) != logfiles2Prefix.end())
+        {
+            taskName = logfiles2Prefix.at(inputSt->getFileStream().getFileName()) + taskName;
+        }
+        
         LogTask *task = nullptr;
         auto it = logTasks.find(taskName);
-
+        
         if(it == logTasks.end())
         {
             task = new LogTask(taskName);
@@ -131,7 +137,7 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
 }
 
 
-std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps)
+std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps, std::map<std::string, std::string>& logfiles2Prefix)
 {
     std::vector<std::string> filenames;
     
@@ -140,10 +146,36 @@ std::vector<std::string> ReplayHandler::parseFilenames(int argc, char* argv[], s
         std::string argv2String(argv[i]);
         std::string whiteList = "--white-list=";
         std::size_t pos = argv2String.find(whiteList);
+        
         if(pos != std::string::npos) 
         {
             std::string params = argv2String.substr(whiteList.length(), argv2String.length());
             boost::split(regExps, params, boost::is_any_of(","));
+            continue;
+        }
+    
+        std::string prefix = "--prefix=";
+        pos = argv2String.find(prefix);
+    
+        if(pos != std::string::npos) 
+        {
+            std::string params = argv2String.substr(prefix.length(), argv2String.length());
+            std::vector<std::string> prefixTuples;
+            boost::split(prefixTuples, params, boost::is_any_of(","));
+            
+            for(const std::string pair : prefixTuples)
+            {
+                std::size_t sep = pair.find(":");
+                if(sep != std::string::npos)
+                {
+                    std::string logfile = pair.substr(0, sep);
+                    std::string prefix = pair.substr(sep + 1, pair.length());
+                    
+                    std::cout << "prefixing: " << logfile << " -> " << prefix << std::endl;
+                    logfiles2Prefix.insert(std::make_pair(logfile, prefix));
+                }
+            }
+            
             continue;
         }
         
