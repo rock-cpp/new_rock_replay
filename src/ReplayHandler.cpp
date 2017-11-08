@@ -95,8 +95,18 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
             continue;       
 
         std::string taskName = st->getName();
+        
+        // filter all '/'
+        size_t pos = taskName.find('/');
+        if(taskName.size() && pos != std::string::npos)
+        {
+            taskName = taskName.substr(pos + 1, taskName.size());
+        }
+        
+        // remove port name
         taskName = taskName.substr(0, taskName.find_last_of('.'));
         
+        //add prefix if active
         if(logfiles2Prefix.find(inputSt->getFileStream().getFileName()) != logfiles2Prefix.end())
         {
             taskName = logfiles2Prefix.at(inputSt->getFileStream().getFileName()) + taskName;

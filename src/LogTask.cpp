@@ -19,15 +19,8 @@ public:
 };
 
 LogTask::LogTask(const std::string& name)
-{
-    std::string correctedName(name);
-    size_t pos = correctedName.find('/');
-    if(correctedName.size() && pos != std::string::npos)
-    {
-        correctedName = correctedName.substr(pos + 1, correctedName.size());
-    }
-    
-    task = new RTT::TaskContext(correctedName);
+{   
+    task = new RTT::TaskContext(name);
 
     RTT::corba::TaskContextServer::Create( task );
     RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
