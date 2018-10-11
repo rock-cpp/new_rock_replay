@@ -20,7 +20,7 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
     multiIndex = new pocolog_cpp::MultiFileIndex();    
     
     orocos_cpp::TypeRegistry reg;
-    reg.loadTypelist();
+    reg.loadTypeRegistries();
     RTT::types::TypeInfoRepository::shared_ptr ti = RTT::types::TypeInfoRepository::Instance();
 
     std::vector<std::regex> regExps;
