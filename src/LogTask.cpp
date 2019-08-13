@@ -19,11 +19,13 @@ public:
 };
 
 LogTask::LogTask(const std::string& name)
-{   
+{
     task = new RTT::TaskContext(name);
 
     RTT::corba::TaskContextServer::Create( task );
-    RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
+    RTT::corba::CorbaDispatcher* dispatcher = RTT::corba::CorbaDispatcher::Instance( task->ports());
+    dispatcher->setScheduler(ORO_SCHED_OTHER);
+    dispatcher->setPriority(RTT::os::LowestPriority);
 }
 
 LogTask::~LogTask()
