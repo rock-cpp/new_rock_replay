@@ -21,17 +21,16 @@ rock_library(rock_replay
     SOURCES 
         ReplayHandler.cpp 
         LogTask.cpp
+        FileLoader.cpp
         ReplayGUI.cpp
-        ReplayGUIBase.cpp
         ${VIZ_RESC}
     MOC
         ReplayGUI.h
-        ReplayGUIBase.h
     HEADERS 
         ReplayHandler.hpp 
         LogTask.hpp
+        FileLoader.hpp
         ReplayGUI.h
-        ReplayGUIBase.h
     DEPS_PKGCONFIG 
         orocos_cpp
         pocolog_cpp

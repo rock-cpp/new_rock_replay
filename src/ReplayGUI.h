@@ -1,14 +1,75 @@
-#include "ReplayGUIBase.h"
+#include "ReplayHandler.hpp"
 
-class ReplayGui : public ReplayGuiBase
+#include <QMainWindow>
+#include <QStandardItemModel>
+#include <QTimer>
+
+#include "ui_main.h"
+
+
+enum GUI_MODES
 {
+    PAUSED = 0,
+    PLAYING = 1
+};
+
+
+class ReplayGui : public QMainWindow
+{
+    Q_OBJECT
 
 public:
-    ReplayGui();
-    ~ReplayGui() = default;
+    ReplayGui(QMainWindow *parent = 0);
+    ~ReplayGui();
     
-    void updateTaskView() override;
-    void handleItemChanged(QStandardItem *item) override;
+    void updateTaskView();
+    
+    
+    void initReplayHandler(const QString &title);
+    void initReplayHandler(int argc, char* argv[]);    
+    
+protected:
+    Ui::MainWindow ui;
+    ReplayHandler replayHandler;
+    
+    // models
+    QStandardItemModel *tasksModel;
+    
+    void shiftAToB();
+    
+
+private:    
+    // icons
+    QIcon playIcon, pauseIcon;
+    
+    // timers
+    QTimer *statusUpdateTimer;
+    QTimer *checkFinishedTimer;
+    
+    
+    double sliderToBox(int val);
+    int boxToSlider(double val);
+    bool stoppedBySlider;
+    void changeGUIMode(GUI_MODES mode);
+
+    
+public slots:
+    void handleItemChanged(QStandardItem *item);
+    void togglePlay();
+    void stopPlay();
+    void statusUpdate();
+    void setSpeedBox();
+    void setSpeedSlider();
+    void forward();
+    void backward();
+    void progressSliderUpdate();
+    void handleProgressSliderPressed();
+    void handleSpanSlider();
+    void showInfoAbout();
+    void showOpenFile();
+    void handleRestart();    
+    void setIntervalA();
+    void setIntervalB();
     
 };
 

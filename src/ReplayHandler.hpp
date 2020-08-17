@@ -9,6 +9,7 @@
 #include <boost/thread/condition_variable.hpp>
 #include <regex>
 #include <set>
+#include <thread>
 
 #include "LogTask.hpp"
 
@@ -67,6 +68,8 @@ private:
     uint maxIndex;
     bool finished;
     bool valid;
+    bool running;
+    std::thread replayThread;
     
     bool playing;
     boost::condition_variable cond, factorChangeCond;
@@ -75,7 +78,7 @@ private:
     
     std::map<std::string, LogTask *> logTasks;
     std::vector<LogTask *> streamToTask;
-    pocolog_cpp::MultiFileIndex *multiIndex;
+    pocolog_cpp::MultiFileIndex multiIndex;
     std::set<std::string> whiteList;
         
     const base::Time getTimeStamp(size_t globalIndex);
@@ -83,6 +86,7 @@ private:
     void init();
     void replaySamples();
     bool checkSampleIdx();
-    std::vector<std::string> parseFilenames(int argc, char* argv[], std::vector<std::regex>& regExps, std::map<std::string, std::string>& logfiles2Prefix);
+    
+    std::string getTaskName(pocolog_cpp::InputDataStream* stream);
     
 };
