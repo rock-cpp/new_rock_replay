@@ -21,6 +21,7 @@ rock_library(rock_replay
     SOURCES 
         ReplayHandler.cpp 
         LogTask.cpp
+        LogTaskManager.cpp
         FileLoader.cpp
         ReplayGUI.cpp
         ${VIZ_RESC}
@@ -29,6 +30,7 @@ rock_library(rock_replay
     HEADERS 
         ReplayHandler.hpp 
         LogTask.hpp
+        LogTaskManager.hpp
         FileLoader.hpp
         ReplayGUI.h
     DEPS_PKGCONFIG 
