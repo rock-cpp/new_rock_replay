@@ -12,18 +12,19 @@
 #include "FileLoader.hpp"
 
 
-void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
+void ReplayHandler::loadStreams(int argc, char** argv)
 {
     orocos_cpp::OrocosCppConfig config;
-    config.load_all_packages = true;
     orocos_cpp::OrocosCpp orocos;
     orocos.initialize(config);
 
     std::vector<std::regex> regExps;
     std::map<std::string, std::string> logfiles2Prefix;
     std::vector<std::string> fileNames = FileLoader::parseFileNames(argc, argv, regExps, logfiles2Prefix);
+    std::set<std::string> modelsToLoad;
     
     multiIndex.registerStreamCheck([&](pocolog_cpp::Stream *st){
+        
         std::cout << "Checking " << st->getName() << std::endl;
         pocolog_cpp::InputDataStream *dataStream = dynamic_cast<pocolog_cpp::InputDataStream *>(st);
         if(!dataStream)
@@ -31,24 +32,22 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
             return false;
         }
         
-        
-        std::string modelName = getTaskName(dataStream);
-        
-        
-        if(!orocos.loadAllTypekitsForModel(modelName))
-        {
-            std::cerr << "cannot find " << modelName << " in the type info repository" << std::endl;
-            return false;
-        }
+        modelsToLoad.emplace(getTaskName(dataStream));
         
         return true;
         
-    }
-    );
+    });
 
     multiIndex.createIndex(fileNames);
     streamToTask.resize(multiIndex.getAllStreams().size());
-
+    for(const auto& modelName : modelsToLoad)
+    {
+        if(!orocos.loadAllTypekitsForModel(modelName))
+        {
+            std::cerr << "Could not load typekits for model " << modelName << std::endl;
+        }
+    }
+    
     for(pocolog_cpp::Stream *st : multiIndex.getAllStreams())
     {
         pocolog_cpp::InputDataStream *inputSt = dynamic_cast<pocolog_cpp::InputDataStream *>(st);
@@ -56,32 +55,20 @@ void ReplayHandler::loadStreams(int argc, char** argv, MATCH_MODE mode)
             continue;       
         
         std::string taskName = getTaskName(inputSt);
-        
-        //add prefix if active
-        if(logfiles2Prefix.find(inputSt->getFileStream().getFileName()) != logfiles2Prefix.end())
+
+        auto taskIt = logTasks.find(taskName);
+        if(taskIt == logTasks.end())
         {
-            taskName = logfiles2Prefix.at(inputSt->getFileStream().getFileName()) + taskName;
+            taskIt = logTasks.emplace(taskName, new LogTask(taskName)).first;
         }
-        
-        LogTask *task = nullptr;
-        auto it = logTasks.find(taskName);
-        
-        if(it == logTasks.end())
-        {
-            task = new LogTask(taskName);
-            logTasks.insert(std::make_pair(taskName, task));
-        }
-        else
-        {
-            task = it->second;
-        }
-        task->addStream(*inputSt);
+
+        taskIt->second->addStream(*inputSt);
 
         size_t gIdx = multiIndex.getGlobalStreamIdx(st); 
         if(gIdx > streamToTask.size())
             throw std::runtime_error("Mixup detected");
 
-        streamToTask[gIdx] = task;
+//         streamToTask[gIdx] = task;
     }
 
     valid = !multiIndex.getAllStreams().empty() && !fileNames.empty() && multiIndex.getSize() > 0;
@@ -123,10 +110,6 @@ ReplayHandler::~ReplayHandler()
 //     cond.notify_all();
     replayThread.join();
     
-    
-    for(std::map<std::string, LogTask*>::iterator it = logTasks.begin(); it != logTasks.end(); it++)
-        delete it->second;
-        
     //delete multiIndex;    
 }
 

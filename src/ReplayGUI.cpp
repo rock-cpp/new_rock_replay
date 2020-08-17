@@ -97,7 +97,7 @@ void ReplayGui::initReplayHandler(const QString &title)
 
 void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
-    replayHandler.loadStreams(argc, argv, ReplayHandler::MATCH_MODE::REGEX);
+    replayHandler.loadStreams(argc, argv);
     
     QString title;
     // window title
@@ -113,6 +113,8 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
             title = QString("Multi Logfile Replay");
             break;
     }        
+    
+    initReplayHandler(title);
 }
 
 
@@ -382,21 +384,21 @@ void ReplayGui::updateTaskView()
             delete item;
     }
     
-    for(const std::pair<std::string, LogTask*>& cur : replayHandler.getAllLogTasks())
+    for(const auto& nameToTask : replayHandler.getAllLogTasks())
     {        
-        TreeViewItem *task = new TreeViewItem(cur.second, cur.first);
-        task->setCheckable(false);
-        
-        for(const std::string& portName : cur.second->getTaskContext()->ports()->getPortNames())
-        {
-            QStandardItem *port = new QStandardItem(portName.c_str());
-            port->setCheckable(true);
-            port->setData(Qt::Checked, Qt::CheckStateRole);
-            task->appendRow(port);
-            //portTypes.append(new QStandardItem(QString(cur.second->getTaskContext()->getPort(portName)->getTypeInfo()->getTypeName().c_str())));
-        }
-     
-        tasksModel->appendRow(task);
+//         TreeViewItem *task = new TreeViewItem(nameToTask.second, nameToTask.first);
+//         task->setCheckable(false);
+//         
+//         for(const std::string& portName : nameToTask.second->getTaskContext()->ports()->getPortNames())
+//         {
+//             QStandardItem *port = new QStandardItem(portName.c_str());
+//             port->setCheckable(true);
+//             port->setData(Qt::Checked, Qt::CheckStateRole);
+//             task->appendRow(port);
+//             //portTypes.append(new QStandardItem(QString(cur.second->getTaskContext()->getPort(portName)->getTypeInfo()->getTypeName().c_str())));
+//         }
+//      
+//         tasksModel->appendRow(task);
     }
 }
 

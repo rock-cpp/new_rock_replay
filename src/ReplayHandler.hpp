@@ -10,6 +10,7 @@
 #include <regex>
 #include <set>
 #include <thread>
+#include <memory>
 
 #include "LogTask.hpp"
 
@@ -20,12 +21,6 @@ class ReplayHandler
 public:
     ReplayHandler() = default;
     ~ReplayHandler();
-   
-    enum MATCH_MODE
-    {
-        REGEX = 0,
-        WHITELIST
-    };
     
     void stop();
     void play();
@@ -39,10 +34,9 @@ public:
     void setMaxSampleIndex(uint index);
     void setSpan(uint minIdx, uint maxIdx);
     
-    void loadStreams(int argc, char** argv, MATCH_MODE mode);
-    inline void pushStream(const std::string streamName) { whiteList.insert(streamName); };
+    void loadStreams(int argc, char** argv);
     
-    inline const std::map<std::string, LogTask*>& getAllLogTasks() { return logTasks; };
+    inline const std::map<std::string, std::unique_ptr<LogTask>>& getAllLogTasks() { return logTasks; };
     inline const std::string getCurTimeStamp() { return curTimeStamp; };
     inline const std::string getCurSamplePortName() { return curSamplePortName; };
     inline const uint getCurIndex() { return curIndex; };
@@ -76,10 +70,10 @@ private:
     boost::mutex mut;
     boost::mutex varMut;
     
-    std::map<std::string, LogTask *> logTasks;
+    std::map<std::string, std::unique_ptr<LogTask>> logTasks;
     std::vector<LogTask *> streamToTask;
+    
     pocolog_cpp::MultiFileIndex multiIndex;
-    std::set<std::string> whiteList;
         
     const base::Time getTimeStamp(size_t globalIndex);
     bool replaySample(size_t index, bool dryRun = false);
