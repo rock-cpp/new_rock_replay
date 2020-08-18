@@ -78,13 +78,9 @@ public slots:
 class TreeViewItem : public QStandardItem
 {
     
-private:
-    LogTask *logTask;
-    
 public:
-    TreeViewItem(LogTask *logTask, const std::string &taskName)
+    TreeViewItem(const std::string &taskName)
         : QStandardItem(QString(taskName.c_str()))
-        , logTask(logTask)
     {}
     
     ~TreeViewItem()
@@ -95,10 +91,5 @@ public:
             for(QStandardItem *item : rows)
                 delete item;
         }
-    }
-    
-    LogTask *getLogTask()
-    {
-        return logTask;
     }
 };

@@ -369,7 +369,7 @@ void ReplayGui::handleItemChanged(QStandardItem* item)
     const QModelIndex index = tasksModel->indexFromItem(item);
     QItemSelectionModel *selModel = ui.taskNameList->selectionModel();
     const std::string portName = item->text().toStdString();
-    taskItem->getLogTask()->activateLoggingForPort(portName, item->checkState() == Qt::Checked);
+//     taskItem->getLogTask().activateLoggingForPort(portName, item->checkState() == Qt::Checked);
     selModel->select(QItemSelection(index, index), item->checkState() == Qt::Checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
 }
 
@@ -384,21 +384,21 @@ void ReplayGui::updateTaskView()
             delete item;
     }
     
-    for(const auto& nameToTask : replayHandler.getAllLogTasks())
-    {        
-//         TreeViewItem *task = new TreeViewItem(nameToTask.second, nameToTask.first);
-//         task->setCheckable(false);
-//         
-//         for(const std::string& portName : nameToTask.second->getTaskContext()->ports()->getPortNames())
-//         {
-//             QStandardItem *port = new QStandardItem(portName.c_str());
-//             port->setCheckable(true);
-//             port->setData(Qt::Checked, Qt::CheckStateRole);
-//             task->appendRow(port);
-//             //portTypes.append(new QStandardItem(QString(cur.second->getTaskContext()->getPort(portName)->getTypeInfo()->getTypeName().c_str())));
-//         }
-//      
-//         tasksModel->appendRow(task);
+    for(const auto& taskName2Ports : replayHandler.getTaskNamesWithPorts())
+    {
+        TreeViewItem *task = new TreeViewItem(taskName2Ports.first);
+        task->setCheckable(false);
+        
+        for(const auto& portName : taskName2Ports.second)
+        {
+            QStandardItem *port = new QStandardItem(portName.c_str());
+            port->setCheckable(true);
+            port->setData(Qt::Checked, Qt::CheckStateRole);
+            task->appendRow(port);
+            //portTypes.append(new QStandardItem(QString(cur.second->getTaskContext()->getPort(portName)->getTypeInfo()->getTypeName().c_str())));
+        }
+     
+        tasksModel->appendRow(task);
     }
 }
 

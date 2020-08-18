@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "LogTask.hpp"
+#include "LogTaskManager.hpp"
 
 
 class ReplayHandler
@@ -36,7 +37,8 @@ public:
     
     void loadStreams(int argc, char** argv);
     
-    inline const std::map<std::string, std::unique_ptr<LogTask>>& getAllLogTasks() { return logTasks; };
+    std::vector<std::pair<std::string, std::vector<std::string>>> getTaskNamesWithPorts();
+    
     inline const std::string getCurTimeStamp() { return curTimeStamp; };
     inline const std::string getCurSamplePortName() { return curSamplePortName; };
     inline const uint getCurIndex() { return curIndex; };
@@ -47,9 +49,6 @@ public:
     inline const bool hasFinished() { return finished; };
     inline const bool isPlaying() { return playing; };
     inline void restart() { restartReplay = true; };
-    
-    const base::Time getMinIdxTimeStamp();
-    const base::Time getMaxIdxTimeStamp();
     
 private:  
     bool restartReplay;
@@ -69,18 +68,11 @@ private:
     boost::condition_variable cond, factorChangeCond;
     boost::mutex mut;
     boost::mutex varMut;
-    
-    std::map<std::string, std::unique_ptr<LogTask>> logTasks;
-    std::vector<LogTask *> streamToTask;
-    
-    pocolog_cpp::MultiFileIndex multiIndex;
-        
-    const base::Time getTimeStamp(size_t globalIndex);
+            
     bool replaySample(size_t index, bool dryRun = false);
     void init();
     void replaySamples();
     bool checkSampleIdx();
     
-    std::string getTaskName(pocolog_cpp::InputDataStream* stream);
-    
+    LogTaskManager manager;
 };
