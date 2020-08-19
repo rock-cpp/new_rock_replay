@@ -31,32 +31,29 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames)
     createLogTasks();
 }
 
-bool LogTaskManager::setIndex(size_t index)
+LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
 {
+    std::cout << "setting index to " << index << std::endl;
     try
     {
         pocolog_cpp::InputDataStream *inputStream = dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getSampleStream(index));
-        size_t globalIndex = multiFileIndex.getGlobalStreamIdx(index);
-        sampleMetadata = {
-            inputStream->getName(), 
-            inputStream->getFileIndex().getSampleTime(multiFileIndex.getPosInStream(index)).toString(),
-            [=](){return name2Task.at(globalIndex2TaskName.at(globalIndex)).replaySample(*inputStream, multiFileIndex.getPosInStream(index));}
-        };
+        size_t globalIndex = multiFileIndex.getGlobalStreamIdx(index);        
+        replayCallback = [=](){return name2Task.at(globalIndex2TaskName.at(globalIndex)).replaySample(*inputStream, multiFileIndex.getPosInStream(index));};
         
-        return true;
+        return {inputStream->getName(), inputStream->getFileIndex().getSampleTime(multiFileIndex.getPosInStream(index)), true};
     }
     catch(...)
     {
         
     }
     
-    return false;
+    return {"", base::Time::fromString(""), false};
 }
 
 
 bool LogTaskManager::replaySample()
 {
-    return sampleMetadata.replayCallback();
+    return replayCallback();
 }
 
 const std::map<std::string, LogTask> & LogTaskManager::getAllLogTasks()
@@ -69,10 +66,6 @@ size_t LogTaskManager::getNumSamples()
     return multiFileIndex.getSize();
 }
 
-const LogTaskManager::SampleMetadata& LogTaskManager::getMetaData() const
-{
-    return sampleMetadata;
-}
 
 std::string LogTaskManager::getTaskName(pocolog_cpp::InputDataStream* stream)
 {

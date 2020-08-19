@@ -38,15 +38,10 @@ void ReplayHandler::init()
     finished = false;
     playing = false;
     maxIndex = manager.getNumSamples() - 1;
-    manager.setIndex(curIndex);       
+    setSampleIndex(curIndex);
     replayThread = std::thread(std::bind(&ReplayHandler::replaySamples, this));
 }
 
-
-bool ReplayHandler::replaySample(size_t index, bool dryRun)
-{
-   return manager.setIndex(index);
-}
 
 std::vector<std::pair<std::string, std::vector<std::string>>> ReplayHandler::getTaskNamesWithPorts()
 {
@@ -60,43 +55,26 @@ std::vector<std::pair<std::string, std::vector<std::string>>> ReplayHandler::get
     return taskNamesWithPorts;
 }
 
-bool ReplayHandler::checkSampleIdx()
-{
-    if(curIndex > maxIndex)
-    {
-        finished = true;
-        playing = false;
-        varMut.unlock();
-        return true;
-    }
-    return false;
-}
-
 
 void ReplayHandler::replaySamples()
-{   
-    boost::unique_lock<boost::mutex> lock(mut);
+{      
     running = true;
-    restartReplay = true;
-    
-    base::Time curStamp;
-    base::Time toSleep;
-
-    base::Time systemPlayStartTime;
-    base::Time logPlayStartTime;
-//     curStamp = getTimeStamp(curIndex);
+    base::Time playingTime;
     
     while(running)
     {
         while(playing && curIndex < maxIndex)
         {
-                manager.replaySample();
-                manager.setIndex(curIndex++);
-                const auto& metadata = manager.getMetaData();
-                curSamplePortName = metadata.portName;
-                curTimeStamp = metadata.timeStamp;
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                std::cout << "replaying sample " << curIndex << std::endl;
+            playingTime = base::Time::now();
+            manager.replaySample();
+            
+            const base::Time previousTime = curMetadata.timeStamp;
+            setSampleIndex(curIndex++);
+            
+            base::Time timeToSleep = curMetadata.timeStamp - previousTime;
+            int64_t sleepDuration = timeToSleep.toMilliseconds() * 1 / replayFactor;
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
+            currentSpeed = 0.5;
         }
     }
     
@@ -173,91 +151,67 @@ void ReplayHandler::replaySamples()
 
 void ReplayHandler::stop()
 {
-    varMut.lock();
     curIndex = 0;
     finished = false;
     playing = false;
     restartReplay = true;
-    replaySample(curIndex, true);
-    varMut.unlock();
+    setSampleIndex(curIndex);
 }
 
 
 void ReplayHandler::setReplayFactor(double factor)
 {
-    varMut.lock();
     this->replayFactor = factor;
     if (this->replayFactor < minReplayFactor)
     {
         this->replayFactor = minReplayFactor;
     }
     restartReplay = true;
-    factorChangeCond.notify_one();
-    varMut.unlock();
 }
 
 
 void ReplayHandler::next()
 {
-    varMut.lock();
     if(curIndex < maxIndex)
     {
-        replaySample(++curIndex);
+        setSampleIndex(++curIndex);
     }
-    varMut.unlock();
     
 }
 
 void ReplayHandler::previous()
 {
-    varMut.lock();
     if(curIndex > 0)
     {
-        replaySample(--curIndex);
+        setSampleIndex(--curIndex);;
     }
-    varMut.unlock();
 }
 
 
-void ReplayHandler::setSampleIndex(uint index)
+void ReplayHandler::setSampleIndex(size_t index)
 {
-    varMut.lock();
-    curIndex = index;
-    replaySample(curIndex, true); // do a dry run for metadata update
-    varMut.unlock();
+    curMetadata = manager.setIndex(index);
 }
 
 void ReplayHandler::setMaxSampleIndex(uint index)
 {
-    varMut.lock();
     maxIndex = index;
-    varMut.unlock();
 }
 
 void ReplayHandler::setSpan(uint minIdx, uint maxIdx)
 {
-    varMut.lock();
     curIndex = minIdx;
     maxIndex = maxIdx;
-    varMut.unlock();
 }
 
 
 void ReplayHandler::play()
 {
-    varMut.lock();
-    if(valid)
-    {
-        playing = true;
-        restartReplay = true;
-        cond.notify_one();
-    }
-    varMut.unlock();
+    playing = true;
 }
 
 void ReplayHandler::pause()
 {
-    varMut.lock();
     playing = false;
-    varMut.unlock();
 }
+

@@ -21,22 +21,13 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     checkFinishedTimer = new QTimer();
     checkFinishedTimer->setInterval(10);
     
-    // speed bar
-    ui.speedBar->setMinimum(0);
-    ui.speedBar->setFormat("paused");
-    ui.speedBar->setValue(0);
-    ui.speedBar->setMaximum(100);
-    
     
     // make port and timestamp line edits grey
     QPalette replayInfoPalette;
     replayInfoPalette.setColor(QPalette::Base,Qt::lightGray);
     ui.curPortName->setPalette(replayInfoPalette);
-    ui.curPortName->setReadOnly(true);
     ui.curTimestamp->setPalette(replayInfoPalette);
-    ui.curTimestamp->setReadOnly(true);
     ui.curSampleNum->setPalette(replayInfoPalette);
-    ui.curSampleNum->setReadOnly(true);
     
     
     // icons
@@ -54,7 +45,6 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.intervalBButton, SIGNAL(clicked()), this, SLOT(setIntervalB()));
     QObject::connect(statusUpdateTimer, SIGNAL(timeout()), this, SLOT(statusUpdate()));
     QObject::connect(ui.speedBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeedBox()));
-    QObject::connect(ui.speedSlider, SIGNAL(sliderReleased()), this, SLOT(setSpeedSlider()));
     QObject::connect(ui.progressSlider, SIGNAL(sliderReleased()), this, SLOT(progressSliderUpdate()));
     QObject::connect(ui.progressSlider, SIGNAL(sliderPressed()), this, SLOT(handleProgressSliderPressed()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
@@ -79,7 +69,7 @@ void ReplayGui::initReplayHandler(const QString &title)
     ui.progressSlider->setMaximum(replayHandler.getMaxIndex());
     
     // labels
-    ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler.getMaxIndex())).c_str()));
+//     ui.numSamplesLabel->setText(QString(("/ " + std::to_string(replayHandler.getMaxIndex())).c_str()));
     
     // span slider
     ui.intervalSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
@@ -222,14 +212,11 @@ void ReplayGui::changeGUIMode(GUI_MODES mode)
             ui.playButton->setChecked(false);
             statusUpdateTimer->stop();
             checkFinishedTimer->stop();
-            ui.speedBar->setValue(0);
-            ui.speedBar->setFormat("paused");
             stoppedBySlider = false;
             break;
         case PAUSED:
             ui.playButton->setChecked(true);
             ui.playButton->setIcon(pauseIcon);
-            ui.speedBar->setFormat("%p%");
             statusUpdateTimer->start();
             checkFinishedTimer->start();
             break;
@@ -240,23 +227,20 @@ void ReplayGui::changeGUIMode(GUI_MODES mode)
 
 void ReplayGui::statusUpdate()
 {
-    ui.speedBar->setValue(round(replayHandler.getCurrentSpeed() * ui.speedBar->maximum()));
-    ui.curSampleNum->setText(QString::number(replayHandler.getCurIndex()));
+    ui.curSampleNum->setText(QString::number(replayHandler.getCurIndex()) + "/" + QString::number(replayHandler.getMaxIndex()));
     ui.curTimestamp->setText(replayHandler.getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler.getCurSamplePortName().c_str());
-    ui.progressSlider->setSliderPosition(replayHandler.getCurIndex());        
+    ui.progressSlider->setSliderPosition(replayHandler.getCurIndex()); 
+    ui.speedBar->setValue(replayHandler.getCurrentSpeed() * 100);
 }
 
 void ReplayGui::stopPlay()
 {
-    if(replayHandler.isValid())
-    {
-        replayHandler.stop();
-        replayHandler.setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
-        replayHandler.setSpan(ui.intervalSlider->lowerPosition(), ui.intervalSlider->upperPosition());
-        changeGUIMode(PLAYING);
-        statusUpdate();
-    }
+    replayHandler.stop();
+    replayHandler.setReplayFactor(ui.speedBox->value()); // ensure that old replay speed is kept
+    replayHandler.setSpan(ui.intervalSlider->lowerPosition(), ui.intervalSlider->upperPosition());
+    changeGUIMode(PLAYING);
+    statusUpdate();
 }
 
 
@@ -264,14 +248,6 @@ void ReplayGui::setSpeedBox()
 {
     double speed = ui.speedBox->value();
     replayHandler.setReplayFactor(speed);
-    ui.speedSlider->setValue(boxToSlider(speed));
-}
-
-void ReplayGui::setSpeedSlider()
-{
-    double speed = sliderToBox(ui.speedSlider->value());
-    replayHandler.setReplayFactor(speed);
-    ui.speedBox->setValue(speed);
 }
 
 void ReplayGui::backward()

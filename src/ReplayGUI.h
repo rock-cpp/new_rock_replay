@@ -59,7 +59,6 @@ public slots:
     void stopPlay();
     void statusUpdate();
     void setSpeedBox();
-    void setSpeedSlider();
     void forward();
     void backward();
     void progressSliderUpdate();

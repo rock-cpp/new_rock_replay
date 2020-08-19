@@ -29,7 +29,7 @@ public:
     
     void next();
     void previous();
-    void setSampleIndex(uint index);
+    void setSampleIndex(size_t index);
     
     void setReplayFactor(double factor);
     void setMaxSampleIndex(uint index);
@@ -39,13 +39,12 @@ public:
     
     std::vector<std::pair<std::string, std::vector<std::string>>> getTaskNamesWithPorts();
     
-    inline const std::string getCurTimeStamp() { return curTimeStamp; };
-    inline const std::string getCurSamplePortName() { return curSamplePortName; };
+    inline const std::string getCurTimeStamp() { return curMetadata.timeStamp.toString(); };
+    inline const std::string getCurSamplePortName() { return curMetadata.portName; };
     inline const uint getCurIndex() { return curIndex; };
     inline const size_t getMaxIndex() { return maxIndex; };
     inline const double getReplayFactor() { return replayFactor; };
-    inline const double getCurrentSpeed() { return playing ? currentSpeed : 0; };
-    inline const bool isValid() { return valid; };
+    inline const double getCurrentSpeed() { return currentSpeed; };
     inline const bool hasFinished() { return finished; };
     inline const bool isPlaying() { return playing; };
     inline void restart() { restartReplay = true; };
@@ -55,24 +54,17 @@ private:
     double replayFactor;
     const double minReplayFactor = 1e-5;
     mutable double currentSpeed;
-    std::string curTimeStamp;
-    std::string curSamplePortName;
+    LogTaskManager::SampleMetadata curMetadata;
     uint curIndex;
     uint maxIndex;
     bool finished;
-    bool valid;
     bool running;
     std::thread replayThread;
     
     bool playing;
-    boost::condition_variable cond, factorChangeCond;
-    boost::mutex mut;
-    boost::mutex varMut;
             
-    bool replaySample(size_t index, bool dryRun = false);
     void init();
     void replaySamples();
-    bool checkSampleIdx();
     
     LogTaskManager manager;
 };

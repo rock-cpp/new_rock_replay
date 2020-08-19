@@ -11,24 +11,23 @@
 #include "LogTask.hpp"
 
 class LogTaskManager
-{
+{  
+public:
     struct SampleMetadata 
     {
         std::string portName;
-        std::string timeStamp;
-        std::function<bool()> replayCallback;
+        base::Time timeStamp;
+        bool valid;
     };
-  
-public:
+    
     LogTaskManager();
     ~LogTaskManager() = default;
     
     void init(const std::vector<std::string>& fileNames);
-    bool setIndex(size_t index);
+    SampleMetadata setIndex(size_t index);
     bool replaySample();
     const std::map<std::string, LogTask>& getAllLogTasks();
     size_t getNumSamples();
-    const SampleMetadata& getMetaData() const;
     
 private:
     std::string getTaskName(pocolog_cpp::InputDataStream* stream);
@@ -39,5 +38,5 @@ private:
     std::map<std::string, LogTask> name2Task;
     std::map<size_t, std::string> globalIndex2TaskName;
     orocos_cpp::OrocosCpp orocos;
-    SampleMetadata sampleMetadata;
+    std::function<bool()> replayCallback;
 };
