@@ -29,10 +29,12 @@ LogTask::LogTask(const std::string& name)
 }
 
 LogTask::~LogTask()
-{
+{    
     delete task;
     for(std::map<std::string, PortHandle*>::iterator it = name2handle.begin(); it != name2handle.end(); it++)
+    {
         delete it->second;
+    }
 }
 
 

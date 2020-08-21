@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ReplayHandler.hpp"
 
 #include <QMainWindow>
@@ -5,13 +7,6 @@
 #include <QTimer>
 
 #include "ui_main.h"
-
-
-enum GUI_MODES
-{
-    PAUSED = 0,
-    PLAYING = 1
-};
 
 
 class ReplayGui : public QMainWindow
@@ -23,9 +18,7 @@ public:
     ~ReplayGui();
     
     void updateTaskView();
-    
-    
-    void initReplayHandler(const QString &title);
+        
     void initReplayHandler(int argc, char* argv[]);    
     
 protected:
@@ -34,9 +27,7 @@ protected:
     
     // models
     QStandardItemModel *tasksModel;
-    
-    void shiftAToB();
-    
+        
 
 private:    
     // icons
@@ -46,11 +37,8 @@ private:
     QTimer *statusUpdateTimer;
     QTimer *checkFinishedTimer;
     
-    
-    double sliderToBox(int val);
-    int boxToSlider(double val);
-    bool stoppedBySlider;
-    void changeGUIMode(GUI_MODES mode);
+    void setGuiPaused();
+    void setGuiPlaying();
 
     
 public slots:
@@ -62,8 +50,6 @@ public slots:
     void forward();
     void backward();
     void progressSliderUpdate();
-    void handleProgressSliderPressed();
-    void handleSpanSlider();
     void showInfoAbout();
     void showOpenFile();
     void handleRestart();    

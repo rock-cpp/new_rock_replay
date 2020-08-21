@@ -31,14 +31,22 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames)
     createLogTasks();
 }
 
+void LogTaskManager::deinit()
+{
+    globalIndex2TaskName.clear();
+    name2Task.clear();
+}
+
+
 LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
 {
-    std::cout << "setting index to " << index << std::endl;
     try
     {
         pocolog_cpp::InputDataStream *inputStream = dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getSampleStream(index));
         size_t globalIndex = multiFileIndex.getGlobalStreamIdx(index);        
-        replayCallback = [=](){return name2Task.at(globalIndex2TaskName.at(globalIndex)).replaySample(*inputStream, multiFileIndex.getPosInStream(index));};
+        replayCallback = [=](){
+            return name2Task.at(globalIndex2TaskName.at(globalIndex)).replaySample(*inputStream, multiFileIndex.getPosInStream(index));
+        };
         
         return {inputStream->getName(), inputStream->getFileIndex().getSampleTime(multiFileIndex.getPosInStream(index)), true};
     }
@@ -115,3 +123,13 @@ void LogTaskManager::createLogTasks()
         }
     }
 }
+
+void LogTaskManager::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
+{
+    const auto taskIt = name2Task.find(taskName);
+    if(taskIt != name2Task.end())
+    {
+        taskIt->second.activateLoggingForPort(portName, on);
+    }
+}
+

@@ -1,18 +1,10 @@
 #pragma once
 
-#include <iostream>
-#include <pocolog_cpp/MultiFileIndex.hpp>
 #include <base/Time.hpp>
-#include <orocos_cpp/PluginHelper.hpp>
-#include <rtt/transports/corba/TaskContextServer.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <regex>
-#include <set>
 #include <thread>
 #include <memory>
+#include <future>
 
-#include "LogTask.hpp"
 #include "LogTaskManager.hpp"
 
 
@@ -29,42 +21,54 @@ public:
     
     void next();
     void previous();
-    void setSampleIndex(size_t index);
+    void setSampleIndex(uint64_t index);
     
-    void setReplayFactor(double factor);
-    void setMaxSampleIndex(uint index);
-    void setSpan(uint minIdx, uint maxIdx);
+    void setReplaySpeed(float speed);
+    void setMinSpan(uint64_t minIdx);
+    void setMaxSpan(uint64_t maxIdx);
     
-    void loadStreams(int argc, char** argv);
-    
+    void activateReplayForPort(const std::string& taskName, const std::string& portName, bool on);
+        
+    void init(const std::vector<std::string>& fileNames);
+    void deinit();
     std::vector<std::pair<std::string, std::vector<std::string>>> getTaskNamesWithPorts();
     
-    inline const std::string getCurTimeStamp() { return curMetadata.timeStamp.toString(); };
-    inline const std::string getCurSamplePortName() { return curMetadata.portName; };
-    inline const uint getCurIndex() { return curIndex; };
-    inline const size_t getMaxIndex() { return maxIndex; };
-    inline const double getReplayFactor() { return replayFactor; };
-    inline const double getCurrentSpeed() { return currentSpeed; };
-    inline const bool hasFinished() { return finished; };
-    inline const bool isPlaying() { return playing; };
-    inline void restart() { restartReplay = true; };
+    const std::string getCurTimeStamp() { return curMetadata.timeStamp.toString(); };
+    const std::string getCurSamplePortName() { return curMetadata.portName; };
+    const uint getCurIndex() { return curIndex; };
+    const size_t getMaxIndex() { return maxIdx; };
+    const uint64_t getMinSpan() {return minSpan;};
+    const uint64_t getMaxSpan() {return maxSpan;};
+    const double getReplayFactor() { return targetSpeed; };
+    const double getCurrentSpeed() { return currentSpeed; };
+    const bool hasFinished() { return finished; };
+    const bool isPlaying() { return playing; };
+    const size_t getNumSamples() { return manager.getNumSamples(); };
     
-private:  
-    bool restartReplay;
-    double replayFactor;
-    const double minReplayFactor = 1e-5;
-    mutable double currentSpeed;
+private:
+    void replaySamples();
+    void calculateTimeToSleep();
+    void calculateRelativeSpeed();
+    
+    float targetSpeed;
+    float currentSpeed;
     LogTaskManager::SampleMetadata curMetadata;
-    uint curIndex;
-    uint maxIndex;
+    uint64_t curIndex;
+    uint64_t minSpan;
+    uint64_t maxSpan;
+    uint64_t maxIdx;
     bool finished;
     bool running;
+    std::mutex playMutex;
+    std::condition_variable playCondition;
     std::thread replayThread;
     
-    bool playing;
-            
-    void init();
-    void replaySamples();
+    base::Time previousSampleTime;
+    base::Time timeBeforeSleep;
+    int64_t timeToSleep;
     
+    bool playing;
+        
+
     LogTaskManager manager;
 };

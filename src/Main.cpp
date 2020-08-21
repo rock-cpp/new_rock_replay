@@ -1,11 +1,7 @@
-#include "ReplayGUI.h"
-#include <typelib/pluginmanager.hh>
-
-
+#include "ReplayGui.h"
     
 int main(int argc, char *argv[])
 {
-    Typelib::PluginManager::self manager;
     QApplication a(argc, argv);
     ReplayGui gui;
     

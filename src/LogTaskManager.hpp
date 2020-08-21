@@ -24,8 +24,10 @@ public:
     ~LogTaskManager() = default;
     
     void init(const std::vector<std::string>& fileNames);
+    void deinit();
     SampleMetadata setIndex(size_t index);
     bool replaySample();
+    void activateReplayForPort(const std::string& taskName, const std::string& portName, bool on);
     const std::map<std::string, LogTask>& getAllLogTasks();
     size_t getNumSamples();
     

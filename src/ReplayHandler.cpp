@@ -1,45 +1,42 @@
 #include "ReplayHandler.hpp"
-#include <boost/algorithm/string.hpp>
-#include <orocos_cpp/TypeRegistry.hpp>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <rtt/transports/corba/CorbaDispatcher.hpp>
-#include <rtt/typelib/TypelibMarshallerBase.hpp>
-#include <typelib/typedisplay.hh>
-#include <orocos_cpp/orocos_cpp.hpp>
+
 #include "FileLoader.hpp"
 
-
-void ReplayHandler::loadStreams(int argc, char** argv)
-{
-    auto f = std::vector<std::regex>();
-    auto g = std::map<std::string, std::string>();
-    manager.init(FileLoader::parseFileNames(argc, argv, f, g));
-    init();
-}
+#include <boost/algorithm/clamp.hpp>
 
 
 ReplayHandler::~ReplayHandler()
 {       
-    playing = false;
-    running = false;
-//     cond.notify_all();
-    replayThread.join();
+    deinit();
 }
 
 
-void ReplayHandler::init()
+void ReplayHandler::init(const std::vector<std::string>& fileNames)
 {
-    replayFactor = 1.;
-    currentSpeed = replayFactor;
+    manager.init(fileNames);
+    targetSpeed = 1.;
+    currentSpeed = 0;
     curIndex = 0;
     finished = false;
     playing = false;
-    maxIndex = manager.getNumSamples() - 1;
+    running = true;
+    maxIdx = manager.getNumSamples() - 1;
+    minSpan = 0;
+    maxSpan = maxIdx;
     setSampleIndex(curIndex);
     replayThread = std::thread(std::bind(&ReplayHandler::replaySamples, this));
+}
+
+void ReplayHandler::deinit()
+{
+    {
+        std::lock_guard<std::mutex> lock(playMutex);
+        playing = false;
+        running = false;
+    }
+    playCondition.notify_one();
+    replayThread.join();
+    manager.deinit();
 }
 
 
@@ -57,161 +54,125 @@ std::vector<std::pair<std::string, std::vector<std::string>>> ReplayHandler::get
 
 
 void ReplayHandler::replaySamples()
-{      
-    running = true;
-    base::Time playingTime;
-    
+{          
     while(running)
     {
-        while(playing && curIndex < maxIndex)
+        timeBeforeSleep = base::Time::now();
+        timeToSleep = 0;
+        
         {
-            playingTime = base::Time::now();
+            std::unique_lock<std::mutex> lock(playMutex);
+            playCondition.wait(lock, [this]{return playing || !running;});
+        }
+        
+        while(playing)
+        {
             manager.replaySample();
-            
-            const base::Time previousTime = curMetadata.timeStamp;
-            setSampleIndex(curIndex++);
-            
-            base::Time timeToSleep = curMetadata.timeStamp - previousTime;
-            int64_t sleepDuration = timeToSleep.toMilliseconds() * 1 / replayFactor;
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
-            currentSpeed = 0.5;
+            if(curIndex < maxSpan)
+            {
+                calculateRelativeSpeed();
+                next();
+                calculateTimeToSleep();
+                
+                std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
+            }
+            else
+            {
+                finished = true;
+                playing = false;
+            }
         }
     }
-    
-//     while(running)
-//     {
-//         while(!playing)
-//         {
-//             cond.wait(lock);
-//             restartReplay = true;
-//         }
-//         
-//         varMut.lock();
-//         
-//         if(checkSampleIdx())
-//             continue;
-//         
-//         
-//         if(restartReplay)
-//         {
-//             systemPlayStartTime = base::Time::now();
-//             
-//             //expensive call
-// //             curStamp = getTimeStamp(curIndex);
-//             logPlayStartTime = curStamp;
-//             restartReplay = false;
-//         }
-//         
-//         //TODO check if chronological ordering is right
-//         //TODO if logging for port is not selected, skip cur index
-//         // (allow higher replayFactor)
-//         if (!replaySample(curIndex++))
-//         {
-//             varMut.unlock();
-//             continue;
-//         }
-//         
-//         if(checkSampleIdx())
-//             continue;
-//         
-//         manager.setIndex(curIndex);
-// //         curStamp = getTimeStamp(curIndex);    
-// 
-//         //hm, also expensive, is there a way to reduce this ?
-//         base::Time curTime = base::Time::now();
-//         
-//         //hm, factor... should it not be * replayFactor then ?
-//         int64_t tSinceStart = curStamp.microseconds - logPlayStartTime.microseconds;
-//         tSinceStart = std::max<int64_t>(0, tSinceStart);
-//         base::Time logTimeSinceStart = base::Time::fromMicroseconds(tSinceStart / replayFactor);
-//         base::Time systemTimeSinceStart = (curTime - systemPlayStartTime);
-//         toSleep = logTimeSinceStart - systemTimeSinceStart;
-// 
-//         varMut.unlock();
-//         
-//         if(!playing)
-//             continue;
-//         
-//         if(toSleep.microseconds > 0)
-//         {
-//             factorChangeCond.timed_wait(lock, boost::posix_time::microseconds(toSleep.microseconds));
-//             currentSpeed = replayFactor;
-//         }
-//         else if(toSleep.microseconds == 0)
-//         {
-//             currentSpeed = replayFactor;
-//         }
-//         else // tosleep < 0
-//         {
-//             currentSpeed = logTimeSinceStart.toSeconds() / systemTimeSinceStart.toSeconds();   
-//         }      
-//     }
-
 }
+
+void ReplayHandler::calculateTimeToSleep()
+{
+    timeToSleep = (curMetadata.timeStamp - previousSampleTime).toMilliseconds() / targetSpeed;
+    timeBeforeSleep = base::Time::now();
+}
+
+void ReplayHandler::calculateRelativeSpeed()
+{
+    int64_t diff = (base::Time::now() - timeBeforeSleep).toMilliseconds();
+    if(diff && timeToSleep)
+    {
+        currentSpeed = static_cast<double>(timeToSleep) / diff;
+    }
+    else
+    {
+        currentSpeed = 1;
+    }
+}
+
 
 void ReplayHandler::stop()
 {
-    curIndex = 0;
+    curIndex = minSpan;
     finished = false;
+    
+    std::lock_guard<std::mutex> lock(playMutex);
     playing = false;
-    restartReplay = true;
     setSampleIndex(curIndex);
 }
 
 
-void ReplayHandler::setReplayFactor(double factor)
+void ReplayHandler::setReplaySpeed(float speed)
 {
-    this->replayFactor = factor;
-    if (this->replayFactor < minReplayFactor)
-    {
-        this->replayFactor = minReplayFactor;
-    }
-    restartReplay = true;
+    constexpr float minimumSpeed = 0.01;
+    targetSpeed = std::max(speed, minimumSpeed);
 }
 
 
 void ReplayHandler::next()
 {
-    if(curIndex < maxIndex)
-    {
-        setSampleIndex(++curIndex);
-    }
-    
+    previousSampleTime = curMetadata.timeStamp;
+    setSampleIndex(++curIndex);
 }
 
 void ReplayHandler::previous()
 {
-    if(curIndex > 0)
+    if(curIndex)
     {
-        setSampleIndex(--curIndex);;
+        setSampleIndex(--curIndex);
     }
 }
 
 
-void ReplayHandler::setSampleIndex(size_t index)
+void ReplayHandler::setSampleIndex(uint64_t index)
 {
+    curIndex = boost::algorithm::clamp(index, minSpan, maxSpan);
     curMetadata = manager.setIndex(index);
 }
 
-void ReplayHandler::setMaxSampleIndex(uint index)
+void ReplayHandler::setMinSpan(uint64_t minIdx)
 {
-    maxIndex = index;
+    minSpan = minIdx;
 }
 
-void ReplayHandler::setSpan(uint minIdx, uint maxIdx)
+void ReplayHandler::setMaxSpan(uint64_t maxIdx)
 {
-    curIndex = minIdx;
-    maxIndex = maxIdx;
+    maxSpan = maxIdx;
 }
-
 
 void ReplayHandler::play()
 {
-    playing = true;
+    {
+        std::lock_guard<std::mutex> lock(playMutex);
+        playing = true;
+    }
+    playCondition.notify_one();
 }
 
 void ReplayHandler::pause()
 {
-    playing = false;
+    {
+        std::lock_guard<std::mutex> lock(playMutex);
+        playing = false;
+    }
+    currentSpeed = 0;
 }
 
+void ReplayHandler::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
+{
+    manager.activateReplayForPort(taskName, portName, on);
+}
