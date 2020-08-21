@@ -2,6 +2,12 @@
     
 int main(int argc, char *argv[])
 {
+    if(argc < 2)
+    {
+        std::cout << "Usage: rock-replay2 <logfile|folder>" << std::endl;
+        return 0;
+    }
+        
     QApplication a(argc, argv);
     ReplayGui gui;
     
