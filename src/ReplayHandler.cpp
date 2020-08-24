@@ -45,8 +45,8 @@ std::vector<std::pair<std::string, std::vector<std::string>>> ReplayHandler::get
     std::vector<std::pair<std::string, std::vector<std::string>>> taskNamesWithPorts;
     for(const auto& name2Task : manager.getAllLogTasks())
     {
-        auto foo = name2Task.second.getTaskContext()->ports()->getPortNames();
-        taskNamesWithPorts.emplace_back(name2Task.first, foo);
+        const auto portNames = name2Task.second.getTaskContext()->ports()->getPortNames();
+        taskNamesWithPorts.emplace_back(name2Task.first, portNames);
     }
         
     return taskNamesWithPorts;
@@ -73,8 +73,9 @@ void ReplayHandler::replaySamples()
                 calculateRelativeSpeed();
                 next();
                 calculateTimeToSleep();
-                
-                std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
+
+                std::unique_lock<std::mutex> lock(playMutex);
+                playCondition.wait_for(lock, std::chrono::milliseconds(timeToSleep), [this]{return !playing || !running;});
             }
             else
             {
@@ -113,6 +114,7 @@ void ReplayHandler::stop()
     std::lock_guard<std::mutex> lock(playMutex);
     playing = false;
     setSampleIndex(curIndex);
+    playCondition.notify_one();
 }
 
 
