@@ -18,7 +18,7 @@ namespace RTT {
 class LogTask
 {
     std::vector<PortHandle *> handles;
-    RTT::TaskContext *task;
+    std::unique_ptr<RTT::TaskContext> task;
     std::map<std::string, PortHandle *> name2handle;
 public:
     LogTask(const std::string &name);
@@ -29,9 +29,9 @@ public:
     bool createReplayPort(const std::string& portname, const std::string& typestr, PortHandle& handled);
     bool addReplayPort(RTT::base::OutputPortInterface* writer, std::string const& stream_name);
 
-    inline const RTT::TaskContext* getTaskContext() const
+    inline const RTT::TaskContext& getTaskContext() const
     {
-        return task;
+        return *task;
     }
     
     const std::vector<PortHandle *> &getHandles()

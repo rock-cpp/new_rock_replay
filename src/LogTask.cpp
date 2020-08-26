@@ -20,17 +20,15 @@ public:
 
 LogTask::LogTask(const std::string& name)
 {
-    task = new RTT::TaskContext(name);
-
-    RTT::corba::TaskContextServer::Create( task );
+    task = std::unique_ptr<RTT::TaskContext>(new RTT::TaskContext(name));
+    
     RTT::corba::CorbaDispatcher* dispatcher = RTT::corba::CorbaDispatcher::Instance( task->ports());
     dispatcher->setScheduler(ORO_SCHED_OTHER);
     dispatcher->setPriority(RTT::os::LowestPriority);
 }
 
 LogTask::~LogTask()
-{    
-    delete task;
+{
     for(std::map<std::string, PortHandle*>::iterator it = name2handle.begin(); it != name2handle.end(); it++)
     {
         delete it->second;

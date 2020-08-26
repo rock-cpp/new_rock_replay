@@ -45,7 +45,7 @@ std::vector<std::pair<std::string, std::vector<std::string>>> ReplayHandler::get
     std::vector<std::pair<std::string, std::vector<std::string>>> taskNamesWithPorts;
     for(const auto& name2Task : manager.getAllLogTasks())
     {
-        const auto portNames = name2Task.second.getTaskContext()->ports()->getPortNames();
+        const auto portNames = name2Task.second.getTaskContext().ports()->getPortNames();
         taskNamesWithPorts.emplace_back(name2Task.first, portNames);
     }
         

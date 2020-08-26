@@ -33,6 +33,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames)
 
 void LogTaskManager::deinit()
 {
+    multiFileIndex = pocolog_cpp::MultiFileIndex();
     globalIndex2TaskName.clear();
     name2Task.clear();
 }
@@ -43,12 +44,12 @@ LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
     try
     {
         pocolog_cpp::InputDataStream *inputStream = dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getSampleStream(index));
-        size_t globalIndex = multiFileIndex.getGlobalStreamIdx(index);        
+        size_t globalIndex = multiFileIndex.getGlobalStreamIdx(index);
         replayCallback = [=](){
-            return name2Task.at(globalIndex2TaskName.at(globalIndex)).replaySample(*inputStream, multiFileIndex.getPosInStream(index));
+            return name2Task.at(globalIndex2TaskName.at(globalIndex).taskName).replaySample(*inputStream, multiFileIndex.getPosInStream(index));
         };
         
-        return {inputStream->getName(), inputStream->getFileIndex().getSampleTime(multiFileIndex.getPosInStream(index)), true};
+        return {inputStream->getName(), inputStream->getFileIndex().getSampleTime(multiFileIndex.getPosInStream(index)), globalIndex2TaskName.at(globalIndex).canReplay};
     }
     catch(...)
     {
@@ -61,7 +62,16 @@ LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
 
 bool LogTaskManager::replaySample()
 {
-    return replayCallback();
+    try 
+    {
+        replayCallback();
+    }
+    catch(std::runtime_error& e)
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 const std::map<std::string, LogTask> & LogTaskManager::getAllLogTasks()
@@ -96,9 +106,16 @@ void LogTaskManager::loadTypekits(const std::set<std::string>& modelsToLoad)
 {
     for(const auto& modelName : modelsToLoad)
     {
-        if(!orocos.loadAllTypekitsForModel(modelName))
+        try 
         {
-            std::cerr << "Could not load typekits for model " << modelName << std::endl;
+            if(orocos.loadAllTypekitsForModel(modelName))
+            {
+                std::cerr << "No need to load typekits for model " << modelName << std::endl;
+            }
+        }
+        catch(std::runtime_error& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
     }
 }
@@ -111,18 +128,32 @@ void LogTaskManager::createLogTasks()
         if(inputSt)
         {
             std::string taskName = getTaskName(inputSt);
-
             auto taskIt = name2Task.find(taskName);
-            if(taskIt == name2Task.end())
-            {
-                taskIt = name2Task.emplace(taskName, taskName).first;
-            }
-
-            taskIt->second.addStream(*inputSt);
-            globalIndex2TaskName.emplace(multiFileIndex.getGlobalStreamIdx(st), taskName);
+            bool canReplay = addStreamToTask(taskIt, taskName, *inputSt);
+            globalIndex2TaskName.emplace(multiFileIndex.getGlobalStreamIdx(st), GlobalIndexInfo{taskName, canReplay});
         }
     }
 }
+
+bool LogTaskManager::addStreamToTask(std::map<std::string, LogTask>::iterator& taskIt, const std::string& taskName, const pocolog_cpp::InputDataStream& inputStream)
+{
+    try
+    {
+        if(taskIt == name2Task.end())
+        {
+            taskIt = name2Task.emplace(taskName, taskName).first;
+        }
+        taskIt->second.addStream(inputStream);
+    }
+    catch(...)
+    {
+        std::cerr << "Replaying for " << inputStream.getName() << " is disabled, as no typekits are found." << std::endl;
+        return false;
+    }
+    
+    return true;
+}
+
 
 void LogTaskManager::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
 {

@@ -23,8 +23,10 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     checkFinishedTimer = new QTimer();
     checkFinishedTimer->setInterval(10);
     
-    ui.actionOpenLogfile->setEnabled(false);
-        
+    QPalette palette;
+    palette.setColor(QPalette::Window, Qt::red);
+    ui.curPortName->setPalette(palette);
+            
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
@@ -41,7 +43,7 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(ui.progressSlider, SIGNAL(sliderReleased()), this, SLOT(progressSliderUpdate()));
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     QObject::connect(ui.infoAbout, SIGNAL(triggered()), this, SLOT(showInfoAbout()));
-//     QObject::connect(ui.actionOpenLogfile, SIGNAL(triggered()), this, SLOT(showOpenFile()));
+    QObject::connect(ui.actionOpenLogfile, SIGNAL(triggered()), this, SLOT(showOpenFile()));
     QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleItemChanged(QStandardItem *)));
 }
 
@@ -187,8 +189,9 @@ void ReplayGui::statusUpdate()
     ui.curSampleNum->setText(QString::number(replayHandler.getCurIndex()) + "/" + QString::number(replayHandler.getMaxIndex())+ interval);
     ui.curTimestamp->setText(replayHandler.getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler.getCurSamplePortName().c_str());
+    ui.curPortName->setAutoFillBackground(!replayHandler.canSampleBeReplayed());
     ui.progressSlider->setSliderPosition(replayHandler.getCurIndex()); 
-    ui.speedBar->setValue(replayHandler.getCurrentSpeed() * 100);
+    ui.speedBar->setValue(replayHandler.getCurrentSpeed() * 100);    
 }
 
 void ReplayGui::stopPlay()
@@ -241,6 +244,7 @@ void ReplayGui::showOpenFile()
     }
     
     stopPlay();
+    replayHandler.deinit();
     initReplayHandler(cStrings.size(), cStrings.data());
     updateTaskView();
     statusUpdate();

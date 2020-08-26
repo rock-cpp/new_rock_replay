@@ -172,6 +172,15 @@ public:
      */
     const double getCurrentSpeed() { return currentSpeed; };
     
+    
+    /**
+     * @brief Returns whether the current displayed port can be replayed,
+     * i.e. if a typelib entry can unmarshal the data. If not, the sample is skipped.
+     * 
+     * @return const bool True if sample can be replayed, false otherwise.
+     */
+    const bool canSampleBeReplayed() { return curMetadata.valid; };
+    
     /**
      * @brief Returns whether playing has finished.
      * 
