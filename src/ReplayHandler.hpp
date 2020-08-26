@@ -119,81 +119,81 @@ public:
     /**
      * @brief Returns the current sample timestamp.
      * 
-     * @return const std::string Current timestamp.
+     * @return std::string Current timestamp.
      */
-    const std::string getCurTimeStamp() { return curMetadata.timeStamp.toString(); };
+    std::string getCurTimeStamp() { return curMetadata.timeStamp.toString(); };
     
     /**
      * @brief Returns the current sample port name.
      * 
-     * @return const std::string Current port name.
+     * @return std::string Current port name.
      */
-    const std::string getCurSamplePortName() { return curMetadata.portName; };
+    std::string getCurSamplePortName() { return curMetadata.portName; };
     
     /**
      * @brief Returns the current intex.
      * 
-     * @return const uint Current index.
+     * @return uint Current index.
      */
-    const uint getCurIndex() { return curIndex; };
+    uint getCurIndex() { return curIndex; };
     
     /**
      * @brief Returns the maximum possible index.
      * 
-     * @return const size_t Maximum index.
+     * @return size_t Maximum index.
      */
-    const size_t getMaxIndex() { return maxIdx; };
+    size_t getMaxIndex() { return maxIdx; };
     
     /**
      * @brief Returns the minimum span index.
      * 
-     * @return const uint64_t Minimum span.
+     * @return uint64_t Minimum span.
      */
-    const uint64_t getMinSpan() {return minSpan;};
+    uint64_t getMinSpan() {return minSpan;};
     
     /**
      * @brief Returns the maximum span index.
      * 
-     * @return const uint64_t Maximum span.
+     * @return uint64_t Maximum span.
      */
-    const uint64_t getMaxSpan() {return maxSpan;};
+    uint64_t getMaxSpan() {return maxSpan;};
     
     /**
      * @brief Returns the set relative target speed.
      * 
-     * @return const double Commanded speed.
+     * @return double Commanded speed.
      */
-    const double getReplayFactor() { return targetSpeed; };
+    double getReplayFactor() { return targetSpeed; };
     
     /**
      * @brief Returns the reached speed taking in account the target speed.
      * 
-     * @return const double Current speed.
+     * @return double Current speed.
      */
-    const double getCurrentSpeed() { return currentSpeed; };
+    double getCurrentSpeed() { return currentSpeed; };
     
     
     /**
      * @brief Returns whether the current displayed port can be replayed,
-     * i.e. if a typelib entry can unmarshal the data. If not, the sample is skipped.
+     * i.e. if a typelib entry can unmarshal the data.
      * 
-     * @return const bool True if sample can be replayed, false otherwise.
+     * @return bool True if sample can be replayed, false otherwise.
      */
-    const bool canSampleBeReplayed() { return curMetadata.valid; };
+    bool canSampleBeReplayed() { return curMetadata.valid; };
     
     /**
      * @brief Returns whether playing has finished.
      * 
-     * @return const bool True if playing is finished, false otherwise.
+     * @return bool True if playing is finished, false otherwise.
      */
-    const bool hasFinished() { return finished; };
+    bool hasFinished() { return finished; };
     
     /**
      * @brief Returns whether the replay handler is currently in playing mode.
      * 
-     * @return const bool True if playing is active, false otherwise.
+     * @return bool True if playing is active, false otherwise.
      */
-    const bool isPlaying() { return playing; };
+    bool isPlaying() { return playing; };
     
 private:
     /**
