@@ -4,7 +4,7 @@ int main(int argc, char *argv[])
 {
     if(argc < 2)
     {
-        std::cout << "Usage: rock-replay2 <logfile|folder>" << std::endl;
+        std::cout << "Usage: rock-replay2 {logfile|*}.log" << std::endl;
         return 0;
     }
         
