@@ -14,3 +14,4 @@ The following features are planend to be implemented next:
 * Re-open of logfiles from Gui.
 * Add whitelisting feature for task/port loading.
 * Add renaming for tasks.
+* Integrate vizkit visualization.
