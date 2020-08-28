@@ -1,43 +1,22 @@
 #pragma once
 #include <string>
 #include <pocolog_cpp/InputDataStream.hpp>
+#include <orocos_cpp/orocos_cpp.hpp>
+#include "LogPort.hpp"
 
-class PortHandle;
-
-namespace Typelib {
-    class Registry;
-}
-
-namespace RTT {
-    class TaskContext;
-    namespace base {
-        class OutputPortInterface;
-    }
-}
 
 class LogTask
 {
-    std::vector<PortHandle *> handles;
-    std::unique_ptr<RTT::TaskContext> task;
-    std::map<std::string, PortHandle *> name2handle;
+    
 public:
-    LogTask(const std::string &name);
+    LogTask(const std::string &taskName, orocos_cpp::OrocosCpp& orocos);
     ~LogTask();
     
-    bool addStream(const pocolog_cpp::InputDataStream &stream);
-    bool replaySample(pocolog_cpp::InputDataStream& stream, size_t sampleNr);
-    bool createReplayPort(const std::string& portname, const std::string& typestr, PortHandle& handled);
-    bool addReplayPort(RTT::base::OutputPortInterface* writer, std::string const& stream_name);
-
-    inline const RTT::TaskContext& getTaskContext() const
-    {
-        return *task;
-    }
-    
-    const std::vector<PortHandle *> &getHandles()
-    {
-        return handles;
-    }
-    
+    bool addStream(pocolog_cpp::InputDataStream& stream);
+    bool replaySample(uint64_t streamIndex, uint64_t indexInStream);    
     void activateLoggingForPort(const std::string &portName, bool activate = true);
+
+private:
+    std::unique_ptr<RTT::TaskContext> task;
+    std::map<uint64_t, std::unique_ptr<LogPort>> streamIdx2Port;
 };

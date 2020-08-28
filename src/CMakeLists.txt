@@ -7,6 +7,7 @@ rock_library(rock_replay
     SOURCES 
         ReplayHandler.cpp 
         LogTask.cpp
+        LogPort.cpp
         LogTaskManager.cpp
         FileLoader.cpp
         ReplayGui.cpp

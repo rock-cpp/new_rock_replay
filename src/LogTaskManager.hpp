@@ -34,18 +34,16 @@ public:
     SampleMetadata setIndex(size_t index);
     bool replaySample();
     void activateReplayForPort(const std::string& taskName, const std::string& portName, bool on);
-    const std::map<std::string, LogTask>& getAllLogTasks();
+//     const std::map<std::string, LogTask>& getAllLogTasks();
     size_t getNumSamples();
     
 private:
-    std::string getTaskName(pocolog_cpp::InputDataStream* stream);
-    void loadTypekits(const std::set<std::string>& modelsToLoad);
     void createLogTasks();
-    bool addStreamToTask(std::map<std::string, LogTask>::iterator& taskIt, const std::string& taskName, const pocolog_cpp::InputDataStream& inputStream);
+    LogTask& findOrCreateLogTask(const std::string& streamName);
+    
     
     pocolog_cpp::MultiFileIndex multiFileIndex;
-    std::map<std::string, LogTask> name2Task;
-    std::map<size_t, GlobalIndexInfo> globalIndex2TaskName;
     orocos_cpp::OrocosCpp orocos;
     std::function<bool()> replayCallback;
+    std::map<std::string, std::shared_ptr<LogTask>> streamName2LogTask;
 };
