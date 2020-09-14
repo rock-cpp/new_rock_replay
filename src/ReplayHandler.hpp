@@ -111,10 +111,10 @@ public:
     void deinit();
     
     /**
-     * @brief Returns a list of pairs of task names with their corresponding port names.
-     * @return std::vector<std::pair<std::string, std::vector<std::string>>> Vector of task names with list of pairs.
+     * @brief Returns a map of task names with a list of their ports.
+     * @return std::map<std::string, std::vector<std::string>> Map of task names with list of ports.
      */
-    std::vector<std::pair<std::string, std::vector<std::string>>> getTaskNamesWithPorts();
+    std::map<std::string, std::vector<std::pair<std::string, std::string>>> getTaskNamesWithPorts();
     
     /**
      * @brief Returns the current sample timestamp.
@@ -179,7 +179,7 @@ public:
      * 
      * @return bool True if sample can be replayed, false otherwise.
      */
-    bool canSampleBeReplayed() { return curMetadata.valid; };
+    bool canSampleBeReplayed() { return curMetadata.valid && replayWasValid; };
     
     /**
      * @brief Returns whether playing has finished.
@@ -310,6 +310,8 @@ private:
      */
     int64_t timeToSleep;
 
+    bool replayWasValid;
+    
     /**
      * @brief Log task manager.
      * 

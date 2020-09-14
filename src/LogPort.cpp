@@ -2,13 +2,14 @@
 
 LogPort::LogPort(const std::string& name, pocolog_cpp::InputDataStream& inputDataStream)
     : name(name)
+    , port(nullptr)
     , inputDataStream(inputDataStream)
 {
 }
 
 bool LogPort::replaySample(uint64_t sampleInStream)
 {    
-    if(!loggingActive)
+    if(!loggingActive || !port)
     {
         return false;
     }    
@@ -65,6 +66,16 @@ bool LogPort::replaySample(uint64_t sampleInStream)
     port->write(sample);
     
     return true;
+}
+
+std::string LogPort::getName()
+{
+    return name;
+}
+
+void LogPort::activateReplay(bool on)
+{
+    loggingActive = on;
 }
 
 bool LogPort::initialize(RTT::TaskContext& parentTask)

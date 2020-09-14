@@ -12,9 +12,9 @@ public:
     LogTask(const std::string &taskName, orocos_cpp::OrocosCpp& orocos);
     ~LogTask();
     
-    bool addStream(pocolog_cpp::InputDataStream& stream);
+    void addStream(pocolog_cpp::InputDataStream& stream);
     bool replaySample(uint64_t streamIndex, uint64_t indexInStream);    
-    void activateLoggingForPort(const std::string &portName, bool activate = true);
+    void activateLoggingForPort(const std::string& portName, bool activate = true);
 
 private:
     std::unique_ptr<RTT::TaskContext> task;

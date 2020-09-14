@@ -1,4 +1,6 @@
 #include "LogTask.hpp"
+
+#include "LogFileHelper.hpp"
 #include <rtt/typelib/TypelibMarshallerBase.hpp>
 #include <rtt/types/Types.hpp>
 #include <rtt/TaskContext.hpp>
@@ -10,42 +12,53 @@
 
 LogTask::LogTask(const std::string& taskName, orocos_cpp::OrocosCpp& orocos)
 {    
-    orocos.loadAllTypekitsForModel(taskName);
-    
-    task = std::unique_ptr<RTT::TaskContext>(new RTT::TaskContext(taskName));
-    RTT::corba::TaskContextServer::Create(task.get());
-    RTT::corba::CorbaDispatcher* dispatcher = RTT::corba::CorbaDispatcher::Instance(task->ports());
-    dispatcher->setScheduler(ORO_SCHED_OTHER);
-    dispatcher->setPriority(RTT::os::LowestPriority);
-    
-    std::cout << "created task " << taskName << std::endl;
+    try
+    {
+        orocos.loadAllTypekitsForModel(taskName);
+        
+        task = std::unique_ptr<RTT::TaskContext>(new RTT::TaskContext(taskName));
+        RTT::corba::TaskContextServer::Create(task.get());
+        RTT::corba::CorbaDispatcher* dispatcher = RTT::corba::CorbaDispatcher::Instance(task->ports());
+        dispatcher->setScheduler(ORO_SCHED_OTHER);
+        dispatcher->setPriority(RTT::os::LowestPriority);
+        
+        std::cout << "created task " << taskName << std::endl;
+    }
+    catch(std::runtime_error& e)
+    {
+        std::cerr << "could not create task " << taskName << " due to missing typekit" << std::endl;
+    }
 }
 
 LogTask::~LogTask()
 {
-   
+    RTT::corba::TaskContextServer::CleanupServer(task.get());
 }
 
 
 void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
 {
-   
+    for(const auto& idx2Port : streamIdx2Port)
+    {
+        if(idx2Port.second->getName() == portName)
+        {
+            idx2Port.second->activateReplay(activate);
+        }
+    }
 }
 
-bool LogTask::addStream(pocolog_cpp::InputDataStream& stream)
+void LogTask::addStream(pocolog_cpp::InputDataStream& stream)
 {
-    size_t nameStart = stream.getName().find_last_of('.') + 1;
-    std::string portName = stream.getName().substr(nameStart, stream.getName().size());
+    const auto taskAndPortName = LogFileHelper::splitStreamName(stream.getName());
     
-    auto logPort = std::unique_ptr<LogPort>(new LogPort(portName, stream));
+    auto logPort = std::unique_ptr<LogPort>(new LogPort(taskAndPortName.second, stream));
   
-    if(logPort->initialize(*task))
+    if(task)
     {
-        streamIdx2Port.emplace(stream.getIndex(), std::move(logPort));
-        return true;
-    }
-    
-    return false;
+        logPort->initialize(*task);
+    }    
+
+    streamIdx2Port.emplace(stream.getIndex(), std::move(logPort));
 }
 
 bool LogTask::replaySample(uint64_t streamIndex, uint64_t indexInStream)

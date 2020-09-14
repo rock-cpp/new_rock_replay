@@ -20,12 +20,6 @@ public:
         bool valid;
     };
     
-    struct GlobalIndexInfo
-    {
-        std::string taskName;
-        bool canReplay;
-    };
-    
     LogTaskManager();
     ~LogTaskManager() = default;
     
@@ -34,7 +28,7 @@ public:
     SampleMetadata setIndex(size_t index);
     bool replaySample();
     void activateReplayForPort(const std::string& taskName, const std::string& portName, bool on);
-//     const std::map<std::string, LogTask>& getAllLogTasks();
+    std::map<std::string, std::vector<std::pair<std::string, std::string>>> getTaskNamesWithPorts();
     size_t getNumSamples();
     
 private:

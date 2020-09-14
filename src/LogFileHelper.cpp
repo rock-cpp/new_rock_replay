@@ -1,4 +1,4 @@
-#include "FileLoader.hpp"
+#include "LogFileHelper.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <sys/types.h>
@@ -7,7 +7,7 @@
 #include <dirent.h>
 #include <iostream>
 
-std::vector<std::string> FileLoader::parseFileNames(int argc, char* argv[], std::vector<std::regex>& regExps, std::map<std::string, std::string>& logfiles2Prefix)
+std::vector<std::string> LogFileHelper::parseFileNames(int argc, char* argv[], std::vector<std::regex>& regExps, std::map<std::string, std::string>& logfiles2Prefix)
 {
     std::vector<std::string> filenames;
     
@@ -92,4 +92,19 @@ std::vector<std::string> FileLoader::parseFileNames(int argc, char* argv[], std:
     }
     
     return filenames;
+}
+
+std::pair<std::string, std::string> LogFileHelper::splitStreamName(const std::string& streamName)
+{
+    std::string taskName = streamName;        
+    
+    // filter all '/'
+    size_t pos = taskName.find('/');
+    if(taskName.size() && pos != std::string::npos)
+    {
+        taskName = taskName.substr(pos + 1, taskName.size());
+    }
+
+    size_t portSplitToken = taskName.find_last_of('.');
+    return {taskName.substr(0, portSplitToken), taskName.substr(portSplitToken + 1, taskName.size())};
 }

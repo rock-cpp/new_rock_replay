@@ -1,5 +1,6 @@
 #include "LogTaskManager.hpp"
 
+#include "LogFileHelper.hpp"
 #include <orocos_cpp/orocos_cpp.hpp>
 
 LogTaskManager::LogTaskManager()
@@ -24,6 +25,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames)
 void LogTaskManager::deinit()
 {
     multiFileIndex = pocolog_cpp::MultiFileIndex();
+    streamName2LogTask.clear();
 }
 
 
@@ -33,7 +35,8 @@ LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
     {
         pocolog_cpp::InputDataStream *inputStream = dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getSampleStream(index));
         replayCallback = [=](){
-            return streamName2LogTask.at(inputStream->getName())->replaySample(multiFileIndex.getGlobalStreamIdx(inputStream), multiFileIndex.getPosInStream(index));
+            streamName2LogTask.at(inputStream->getName())->activateLoggingForPort("status", false);
+            return streamName2LogTask.at(inputStream->getName())->replaySample(inputStream->getIndex(), multiFileIndex.getPosInStream(index));
         };
         
         return {inputStream->getName(), inputStream->getFileIndex().getSampleTime(multiFileIndex.getPosInStream(index)), true};
@@ -51,6 +54,7 @@ bool LogTaskManager::replaySample()
 {
     try 
     {
+//         return replayCallback(); //TODO: give replay feedback and reset und stop
         replayCallback();
     }
     catch(std::runtime_error& e)
@@ -61,11 +65,35 @@ bool LogTaskManager::replaySample()
     return true;
 }
 
-// const std::map<std::string, LogTask> & LogTaskManager::getAllLogTasks()
-// {
-//     return {};
-// //     return name2Task;
-// }
+std::map<std::string, std::vector<std::pair<std::string, std::string>>> LogTaskManager::getTaskNamesWithPorts()
+{
+    std::map<std::string, std::vector<std::pair<std::string, std::string>>> taskNames2Ports;
+    for(const auto& streamNameIt : streamName2LogTask)
+    {
+        const std::string& streamName = streamNameIt.first;
+        const auto taskAndPortName = LogFileHelper::splitStreamName(streamName);
+        
+        auto taskNameIt = taskNames2Ports.find(taskAndPortName.first);
+        if(taskNameIt == taskNames2Ports.end())
+        {
+            taskNameIt = taskNames2Ports.emplace(taskAndPortName.first, std::vector<std::pair<std::string, std::string>>()).first;
+        }
+        
+        std::string portType = "";
+        for(const auto stream : multiFileIndex.getAllStreams())
+        {
+            if(stream->getName() == streamName)
+            {
+                auto inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(stream);
+                portType = inputSt->getCXXType();
+            }
+        }
+        
+        taskNameIt->second.push_back({taskAndPortName.second, portType});
+    }
+    
+    return taskNames2Ports;
+}
 
 size_t LogTaskManager::getNumSamples()
 {
@@ -86,25 +114,13 @@ void LogTaskManager::createLogTasks()
 }
 
 LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)
-{
-    const auto taskNameFunc = [](const std::string& name) {
-        std::string taskName = name;        
-        
-        // filter all '/'
-        size_t pos = taskName.find('/');
-        if(taskName.size() && pos != std::string::npos)
-        {
-            taskName = taskName.substr(pos + 1, taskName.size());
-        }
-        
-        // remove port name
-        return taskName.substr(0, taskName.find_last_of('.'));
-    };
-    
+{    
     std::shared_ptr<LogTask> logTask;
+    const auto taskNameAndPort = LogFileHelper::splitStreamName(streamName);
+    
     for(const auto& name2LogTask : streamName2LogTask)
     {
-        if(taskNameFunc(name2LogTask.first) == taskNameFunc(streamName))
+        if(LogFileHelper::splitStreamName(name2LogTask.first).first == taskNameAndPort.first)
         { 
             logTask = name2LogTask.second;
         }
@@ -112,7 +128,7 @@ LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)
    
     if(!logTask)
     {
-        logTask = std::make_shared<LogTask>(taskNameFunc(streamName), orocos);
+        logTask = std::make_shared<LogTask>(taskNameAndPort.first, orocos);
     }
     
     streamName2LogTask.emplace(streamName, logTask);
@@ -123,10 +139,7 @@ LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)
 
 void LogTaskManager::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
 {
-//     const auto taskIt = name2Task.find(taskName);
-//     if(taskIt != name2Task.end())
-//     {
-//         taskIt->second.activateLoggingForPort(portName, on);
-//     }
+    LogTask& logTask = findOrCreateLogTask(taskName);
+    logTask.activateLoggingForPort(portName, on);
 }
 

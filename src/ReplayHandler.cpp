@@ -1,6 +1,6 @@
 #include "ReplayHandler.hpp"
 
-#include "FileLoader.hpp"
+#include "LogFileHelper.hpp"
 
 #include <boost/algorithm/clamp.hpp>
 
@@ -20,6 +20,7 @@ void ReplayHandler::init(const std::vector<std::string>& fileNames)
     finished = false;
     playing = false;
     running = true;
+    replayWasValid = true;
     maxIdx = manager.getNumSamples() - 1;
     minSpan = 0;
     maxSpan = maxIdx;
@@ -40,16 +41,9 @@ void ReplayHandler::deinit()
 }
 
 
-std::vector<std::pair<std::string, std::vector<std::string>>> ReplayHandler::getTaskNamesWithPorts()
+std::map<std::string, std::vector<std::pair<std::string, std::string>>> ReplayHandler::getTaskNamesWithPorts()
 {
-    std::vector<std::pair<std::string, std::vector<std::string>>> taskNamesWithPorts;
-//     for(const auto& name2Task : manager.getAllLogTasks())
-//     {
-//         const auto portNames = name2Task.second.getTaskContext().ports()->getPortNames();
-//         taskNamesWithPorts.emplace_back(name2Task.first, portNames);
-//     }
-        
-    return taskNamesWithPorts;
+    return manager.getTaskNamesWithPorts();
 }
 
 
@@ -67,7 +61,7 @@ void ReplayHandler::replaySamples()
         
         while(playing)
         {
-            manager.replaySample();
+            replayWasValid = manager.replaySample();
             if(curIndex < maxSpan)
             {
                 calculateRelativeSpeed();
@@ -127,8 +121,11 @@ void ReplayHandler::setReplaySpeed(float speed)
 
 void ReplayHandler::next()
 {
-    previousSampleTime = curMetadata.timeStamp;
-    setSampleIndex(++curIndex);
+    if(curIndex < maxSpan)
+    {
+        previousSampleTime = curMetadata.timeStamp;
+        setSampleIndex(++curIndex);
+    }
 }
 
 void ReplayHandler::previous()

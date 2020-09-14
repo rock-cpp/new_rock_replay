@@ -17,6 +17,8 @@ public:
     
     bool initialize(RTT::TaskContext& parentTask);
     bool replaySample(uint64_t sampleInStream);
+    std::string getName();
+    void activateReplay(bool on);
     
 private:
     std::string name;

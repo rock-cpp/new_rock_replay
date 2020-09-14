@@ -9,7 +9,7 @@ rock_library(rock_replay
         LogTask.cpp
         LogPort.cpp
         LogTaskManager.cpp
-        FileLoader.cpp
+        LogFileHelper.cpp
         ReplayGui.cpp
         ${VIZ_RESC}
     MOC
@@ -18,7 +18,7 @@ rock_library(rock_replay
         ReplayHandler.hpp 
         LogTask.hpp
         LogTaskManager.hpp
-        FileLoader.hpp
+        LogFileHelper.hpp
         ReplayGui.h
     DEPS_PKGCONFIG 
         orocos_cpp

@@ -1,6 +1,6 @@
 #include "ReplayGui.h"
 
-#include "FileLoader.hpp"
+#include "LogFileHelper.hpp"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -14,7 +14,11 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     // initing models
     tasksModel = new QStandardItemModel();
     ui.taskNameList->setModel(tasksModel);    
-    tasksModel->setHorizontalHeaderItem(0, new QStandardItem(QString("Tasknames")));
+    ui.taskNameList->setAlternatingRowColors(true);
+
+    tasksModel->setColumnCount(2);
+    tasksModel->setHorizontalHeaderLabels(QStringList({"Taskname", "Type"}));
+    ui.taskNameList->setColumnWidth(0, 300);
     
     
     // timer
@@ -58,7 +62,7 @@ void ReplayGui::initReplayHandler(int argc, char* argv[])
 {
     std::vector<std::regex> regExps;
     std::map<std::string, std::string> logfiles2Prefix;
-    const auto fileNames = FileLoader::parseFileNames(argc, argv, regExps, logfiles2Prefix);
+    const auto fileNames = LogFileHelper::parseFileNames(argc, argv, regExps, logfiles2Prefix);
     replayHandler.init(fileNames);
     
     QString title;
@@ -278,19 +282,24 @@ void ReplayGui::updateTaskView()
         for(QStandardItem *item : rows)
             delete item;
     }
+
     
     for(const auto& taskName2Ports : replayHandler.getTaskNamesWithPorts())
     {
         TreeViewItem *task = new TreeViewItem(taskName2Ports.first);
         task->setCheckable(false);
         
+        QList<QStandardItem*> portTypes;
         for(const auto& portName : taskName2Ports.second)
         {
-            QStandardItem *port = new QStandardItem(portName.c_str());
+            QStandardItem *port = new QStandardItem(portName.first.c_str());
             port->setCheckable(true);
             port->setData(Qt::Checked, Qt::CheckStateRole);
-            task->appendRow(port);            
+            task->appendRow(port);
+            portTypes.push_back(new QStandardItem(portName.second.c_str()));
         }
+        
+        task->appendColumn(portTypes);
      
         tasksModel->appendRow(task);
     }
