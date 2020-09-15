@@ -7,7 +7,6 @@ rock_library(rock_replay
     SOURCES 
         ReplayHandler.cpp 
         LogTask.cpp
-        LogPort.cpp
         LogTaskManager.cpp
         LogFileHelper.cpp
         ReplayGui.cpp
@@ -30,7 +29,7 @@ rock_library(rock_replay
         main.ui
 )
 
-target_link_libraries(rock_replay pthread)
+target_link_libraries(rock_replay pthread boost_program_options)
 
 install(FILES ${CMAKE_BINARY_DIR}/src/ui_main.h DESTINATION include/rock_replay/)
 

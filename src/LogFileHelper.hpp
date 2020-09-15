@@ -11,7 +11,7 @@ public:
     LogFileHelper() = default;
     ~LogFileHelper() = default;
     
-    static std::vector<std::string> parseFileNames(int argc, char* argv[], std::vector<std::regex>& regExps, std::map<std::string, std::string>& logfiles2Prefix);
+    static std::vector<std::string> parseFileNames(const std::vector<std::string> commandLineArgs);
     static std::pair<std::string, std::string> splitStreamName(const std::string& streamName);
     
 };

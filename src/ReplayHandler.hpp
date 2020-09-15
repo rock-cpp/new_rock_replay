@@ -102,7 +102,7 @@ public:
      * 
      * @param fileNames: List of file names.
      */
-    void init(const std::vector<std::string>& fileNames);
+    void init(const std::vector<std::string>& fileNames, const std::string& prefix);
     
     /**
      * @brief Deinits the replay handler. Closes all log tasks and allows

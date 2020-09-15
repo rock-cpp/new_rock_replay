@@ -11,9 +11,9 @@ ReplayHandler::~ReplayHandler()
 }
 
 
-void ReplayHandler::init(const std::vector<std::string>& fileNames)
+void ReplayHandler::init(const std::vector<std::string>& fileNames, const std::string& prefix)
 {
-    manager.init(fileNames);
+    manager.init(fileNames, prefix);
     targetSpeed = 1.;
     currentSpeed = 0;
     curIndex = 0;
@@ -37,13 +37,12 @@ void ReplayHandler::deinit()
     }
     playCondition.notify_one();
     replayThread.join();
-    manager.deinit();
 }
 
 
 std::map<std::string, std::vector<std::pair<std::string, std::string>>> ReplayHandler::getTaskNamesWithPorts()
 {
-    return manager.getTaskNamesWithPorts();
+    return manager.getTaskCollection();
 }
 
 

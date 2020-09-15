@@ -20,22 +20,25 @@ public:
         bool valid;
     };
     
+    using PortInfo = std::pair<std::string, std::string>;
+    using PortCollection = std::vector<PortInfo>;
+    using TaskCollection = std::map<std::string, LogTask::PortCollection>;
+    
     LogTaskManager();
     ~LogTaskManager() = default;
     
-    void init(const std::vector<std::string>& fileNames);
-    void deinit();
+    void init(const std::vector<std::string>& fileNames, const std::string& prefix);
     SampleMetadata setIndex(size_t index);
     bool replaySample();
     void activateReplayForPort(const std::string& taskName, const std::string& portName, bool on);
-    std::map<std::string, std::vector<std::pair<std::string, std::string>>> getTaskNamesWithPorts();
+    TaskCollection getTaskCollection();
     size_t getNumSamples();
     
 private:
     void createLogTasks();
     LogTask& findOrCreateLogTask(const std::string& streamName);
     
-    
+    std::string prefix;
     pocolog_cpp::MultiFileIndex multiFileIndex;
     orocos_cpp::OrocosCpp orocos;
     std::function<bool()> replayCallback;

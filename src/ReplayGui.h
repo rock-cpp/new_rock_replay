@@ -19,7 +19,7 @@ public:
     
     void updateTaskView();
         
-    void initReplayHandler(int argc, char* argv[]);    
+    void initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix);    
     
 protected:
     Ui::MainWindow ui;

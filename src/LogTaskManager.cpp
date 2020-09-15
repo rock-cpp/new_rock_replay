@@ -11,8 +11,12 @@ LogTaskManager::LogTaskManager()
 }
 
 
-void LogTaskManager::init(const std::vector<std::string>& fileNames)
+void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::string& prefix)
 {
+    this->prefix = prefix;
+    streamName2LogTask.clear();
+    multiFileIndex = pocolog_cpp::MultiFileIndex();
+//     multiFileIndex = pocolog_cpp::MultiFileIndex(false);
     multiFileIndex.registerStreamCheck([&](pocolog_cpp::Stream *st){
         std::cout << "Checking " << st->getName() << std::endl;
         return dynamic_cast<pocolog_cpp::InputDataStream *>(st);
@@ -22,20 +26,12 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames)
     createLogTasks();
 }
 
-void LogTaskManager::deinit()
-{
-    multiFileIndex = pocolog_cpp::MultiFileIndex();
-    streamName2LogTask.clear();
-}
-
-
 LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
 {
     try
     {
         pocolog_cpp::InputDataStream *inputStream = dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getSampleStream(index));
         replayCallback = [=](){
-            streamName2LogTask.at(inputStream->getName())->activateLoggingForPort("status", false);
             return streamName2LogTask.at(inputStream->getName())->replaySample(inputStream->getIndex(), multiFileIndex.getPosInStream(index));
         };
         
@@ -65,34 +61,16 @@ bool LogTaskManager::replaySample()
     return true;
 }
 
-std::map<std::string, std::vector<std::pair<std::string, std::string>>> LogTaskManager::getTaskNamesWithPorts()
+LogTaskManager::TaskCollection LogTaskManager::getTaskCollection()
 {
-    std::map<std::string, std::vector<std::pair<std::string, std::string>>> taskNames2Ports;
-    for(const auto& streamNameIt : streamName2LogTask)
+    TaskCollection taskNames2PortInfos;
+    for(const auto& streamNameTaskPair : streamName2LogTask)
     {
-        const std::string& streamName = streamNameIt.first;
-        const auto taskAndPortName = LogFileHelper::splitStreamName(streamName);
-        
-        auto taskNameIt = taskNames2Ports.find(taskAndPortName.first);
-        if(taskNameIt == taskNames2Ports.end())
-        {
-            taskNameIt = taskNames2Ports.emplace(taskAndPortName.first, std::vector<std::pair<std::string, std::string>>()).first;
-        }
-        
-        std::string portType = "";
-        for(const auto stream : multiFileIndex.getAllStreams())
-        {
-            if(stream->getName() == streamName)
-            {
-                auto inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(stream);
-                portType = inputSt->getCXXType();
-            }
-        }
-        
-        taskNameIt->second.push_back({taskAndPortName.second, portType});
+        const auto& task = streamNameTaskPair.second;
+        taskNames2PortInfos.emplace(task->getName(), task->getPortCollection());
     }
     
-    return taskNames2Ports;
+    return taskNames2PortInfos;
 }
 
 size_t LogTaskManager::getNumSamples()
@@ -128,7 +106,7 @@ LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)
    
     if(!logTask)
     {
-        logTask = std::make_shared<LogTask>(taskNameAndPort.first, orocos);
+        logTask = std::make_shared<LogTask>(taskNameAndPort.first, prefix, orocos);
     }
     
     streamName2LogTask.emplace(streamName, logTask);
@@ -139,7 +117,15 @@ LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)
 
 void LogTaskManager::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
 {
-    LogTask& logTask = findOrCreateLogTask(taskName);
+    std::string taskNameWithPossiblePrefix = taskName;
+    std::string::size_type index = taskNameWithPossiblePrefix.find(prefix);
+        
+    if(index != std::string::npos)
+    {
+        taskNameWithPossiblePrefix.erase(index, prefix.length());
+    }
+    
+    LogTask& logTask = findOrCreateLogTask(taskNameWithPossiblePrefix);
     logTask.activateLoggingForPort(portName, on);
 }
 

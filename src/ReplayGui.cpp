@@ -58,22 +58,19 @@ ReplayGui::~ReplayGui()
     replayHandler.stop();
 }
 
-void ReplayGui::initReplayHandler(int argc, char* argv[])
+void ReplayGui::initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix)
 {
-    std::vector<std::regex> regExps;
-    std::map<std::string, std::string> logfiles2Prefix;
-    const auto fileNames = LogFileHelper::parseFileNames(argc, argv, regExps, logfiles2Prefix);
-    replayHandler.init(fileNames);
+    replayHandler.init(fileNames, prefix);
     
     QString title;
     // window title
-    switch(argc)
+    switch(fileNames.size())
     {
-        case 1:
+        case 0:
             title = "Rock-Replay";
             break;
-        case 2:
-            title = QString(argv[1]);
+        case 1:
+            title = QString(fileNames[0].c_str());
             break;
         default:
             title = QString("Multi Logfile Replay");
@@ -235,21 +232,15 @@ void ReplayGui::showOpenFile()
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select logfile(s)", "", "Logfiles: *.log");
     QStringList fileNamesCopy = fileNames;  // doc says so
 
-    std::vector<std::string> stdStrings{"rock-replay2"};
-    std::vector<char*> cStrings;
+    std::vector<std::string> stdStrings;
     for(QList<QString>::iterator it = fileNamesCopy.begin(); it != fileNamesCopy.end(); it++)
     {
         stdStrings.push_back(it->toStdString());
     }
     
-    for(std::string &s : stdStrings)
-    {
-        cStrings.push_back(&s.front());
-    }
-    
     stopPlay();
     replayHandler.deinit();
-    initReplayHandler(cStrings.size(), cStrings.data());
+    initReplayHandler(stdStrings, "");
     updateTaskView();
     statusUpdate();
 }
