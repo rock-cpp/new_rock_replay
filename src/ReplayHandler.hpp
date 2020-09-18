@@ -1,11 +1,11 @@
 #pragma once
 
+#include "LogTaskManager.hpp"
+
 #include <base/Time.hpp>
 #include <thread>
 #include <memory>
 #include <future>
-
-#include "LogTaskManager.hpp"
 
 
 /**
@@ -101,6 +101,7 @@ public:
      * All replay parameters are updated and the current index is set to 0.
      * 
      * @param fileNames: List of file names.
+     * @param prefix: Prefix for all tasks.
      */
     void init(const std::vector<std::string>& fileNames, const std::string& prefix);
     
@@ -285,7 +286,7 @@ private:
      * 
      */
     std::condition_variable playCondition;
-    
+        
     /**
      * @brief Replay thread.
      * 
@@ -310,6 +311,9 @@ private:
      */
     int64_t timeToSleep;
 
+    /**
+     * @brief Indicates whether the current sample could be replayed.
+     */
     bool replayWasValid;
     
     /**
