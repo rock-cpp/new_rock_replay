@@ -4,12 +4,10 @@
 
 #include <boost/algorithm/clamp.hpp>
 
-
 ReplayHandler::~ReplayHandler()
-{       
+{
     deinit();
 }
-
 
 void ReplayHandler::init(const std::vector<std::string>& fileNames, const std::string& prefix)
 {
@@ -39,25 +37,23 @@ void ReplayHandler::deinit()
     replayThread.join();
 }
 
-
 std::map<std::string, std::vector<std::pair<std::string, std::string>>> ReplayHandler::getTaskNamesWithPorts()
 {
     return manager.getTaskCollection();
 }
 
-
 void ReplayHandler::replaySamples()
-{          
+{
     while(running)
     {
         timeBeforeSleep = base::Time::now();
         timeToSleep = 0;
-        
+
         {
             std::unique_lock<std::mutex> lock(playMutex);
-            playCondition.wait(lock, [this]{return playing || !running;});
+            playCondition.wait(lock, [this] { return playing || !running; });
         }
-        
+
         while(playing)
         {
             replayWasValid = manager.replaySample();
@@ -68,7 +64,7 @@ void ReplayHandler::replaySamples()
                 calculateTimeToSleep();
 
                 std::unique_lock<std::mutex> lock(playMutex);
-                playCondition.wait_for(lock, std::chrono::milliseconds(timeToSleep), [this]{return !playing || !running;});
+                playCondition.wait_for(lock, std::chrono::milliseconds(timeToSleep), [this] { return !playing || !running; });
             }
             else
             {
@@ -98,25 +94,22 @@ void ReplayHandler::calculateRelativeSpeed()
     }
 }
 
-
 void ReplayHandler::stop()
 {
     curIndex = minSpan;
     finished = false;
-    
+
     std::lock_guard<std::mutex> lock(playMutex);
     playing = false;
     setSampleIndex(curIndex);
     playCondition.notify_one();
 }
 
-
 void ReplayHandler::setReplaySpeed(float speed)
 {
     constexpr float minimumSpeed = 0.01;
     targetSpeed = std::max(speed, minimumSpeed);
 }
-
 
 void ReplayHandler::next()
 {
@@ -134,7 +127,6 @@ void ReplayHandler::previous()
         setSampleIndex(--curIndex);
     }
 }
-
 
 void ReplayHandler::setSampleIndex(uint64_t index)
 {

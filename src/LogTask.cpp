@@ -1,28 +1,28 @@
 #include "LogTask.hpp"
 
 #include "LogFileHelper.hpp"
+
+#include <rtt/TaskContext.hpp>
+#include <rtt/base/OutputPortInterface.hpp>
+#include <rtt/transports/corba/CorbaDispatcher.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
 #include <rtt/typelib/TypelibMarshallerBase.hpp>
 #include <rtt/types/Types.hpp>
-#include <rtt/TaskContext.hpp>
-#include <rtt/transports/corba/TaskContextServer.hpp>
-#include <rtt/transports/corba/CorbaDispatcher.hpp>
-#include <rtt/base/OutputPortInterface.hpp>
 #include <string>
 
-
-LogTask::LogTask(const std::string& taskName, const std::string& prefix, orocos_cpp::OrocosCpp& orocos) 
+LogTask::LogTask(const std::string& taskName, const std::string& prefix, orocos_cpp::OrocosCpp& orocos)
     : prefixedName(prefix + taskName)
-{   
+{
     try
     {
         orocos.loadAllTypekitsForModel(taskName);
-        
+
         task = std::unique_ptr<RTT::TaskContext>(new RTT::TaskContext(prefixedName));
         RTT::corba::TaskContextServer::Create(task.get());
         RTT::corba::CorbaDispatcher* dispatcher = RTT::corba::CorbaDispatcher::Instance(task->ports());
         dispatcher->setScheduler(ORO_SCHED_OTHER);
         dispatcher->setPriority(RTT::os::LowestPriority);
-        
+
         std::cout << "created task " << taskName << std::endl;
     }
     catch(std::runtime_error& e)
@@ -35,7 +35,6 @@ LogTask::~LogTask()
 {
     RTT::corba::TaskContextServer::CleanupServer(task.get());
 }
-
 
 void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
 {
@@ -51,7 +50,7 @@ void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
 void LogTask::addStream(pocolog_cpp::InputDataStream& stream)
 {
     const auto portName = LogFileHelper::splitStreamName(stream.getName()).second;
-    
+
     auto portHandle = createPortHandle(portName, stream);
     if(portHandle && task && !task->getPort(portName))
     {
@@ -61,7 +60,7 @@ void LogTask::addStream(pocolog_cpp::InputDataStream& stream)
     {
         portHandle = std::unique_ptr<PortHandle>(new PortHandle(portName, nullptr, nullptr, nullptr, nullptr, false, stream));
     }
-    
+
     streamIdx2Port.emplace(stream.getIndex(), std::move(portHandle));
 }
 
@@ -74,8 +73,8 @@ std::unique_ptr<LogTask::PortHandle> LogTask::createPortHandle(const std::string
         std::cerr << "cannot find " << inputStream.getCXXType() << " in the type info repository" << std::endl;
         return nullptr;
     }
-    
-    RTT::base::OutputPortInterface *writer= type->outputPort(portName);
+
+    RTT::base::OutputPortInterface* writer = type->outputPort(portName);
     auto typekitTransport = dynamic_cast<orogen_transports::TypelibMarshallerBase*>(type->getProtocol(orogen_transports::TYPELIB_MARSHALLER_ID));
     if(!typekitTransport)
     {
@@ -84,13 +83,13 @@ std::unique_ptr<LogTask::PortHandle> LogTask::createPortHandle(const std::string
     }
 
     //TODO check if local type is same as logfile type
-    
+
     try
     {
         auto transportHandle = typekitTransport->createSample();
         PortHandle* portHandle = new PortHandle(portName, typekitTransport, typekitTransport->getDataSource(transportHandle), transportHandle, writer, true, inputStream);
         return std::unique_ptr<PortHandle>(portHandle);
-    } 
+    }
     catch(const RTT::internal::bad_assignment& ba)
     {
         return nullptr;
@@ -98,23 +97,23 @@ std::unique_ptr<LogTask::PortHandle> LogTask::createPortHandle(const std::string
 }
 
 bool LogTask::replaySample(uint64_t streamIndex, uint64_t indexInStream)
-{        
+{
     auto& portHandle = streamIdx2Port.at(streamIndex);
-    
+
     bool canPortBeSkippedResult;
     if(canPortBeSkipped(canPortBeSkippedResult, portHandle))
     {
         return canPortBeSkippedResult;
     }
-    
+
     bool sampleCanBeUnmarshaled = unmarshalSample(portHandle, indexInStream);
     if(sampleCanBeUnmarshaled)
     {
         checkTaskStateChange(portHandle);
         portHandle->port->write(portHandle->sample);
     }
-    
-    return sampleCanBeUnmarshaled;    
+
+    return sampleCanBeUnmarshaled;
 }
 
 bool LogTask::canPortBeSkipped(bool& result, std::unique_ptr<PortHandle>& portHandle)
@@ -123,40 +122,38 @@ bool LogTask::canPortBeSkipped(bool& result, std::unique_ptr<PortHandle>& portHa
     {
         result = false;
         return true;
-    }    
-    
+    }
+
     if(!portHandle->port->connected())
     {
         result = true;
         return true;
     }
-    
+
     return false;
 }
-
 
 bool LogTask::unmarshalSample(std::unique_ptr<PortHandle>& portHandle, uint64_t indexInStream)
 {
     std::vector<uint8_t> data;
     if(!portHandle->inputDataStream.getSampleData(data, indexInStream))
     {
-        std::cout << "Warning, could not replay sample: " << portHandle->inputDataStream.getName() << " " << indexInStream <<  std::endl;
+        std::cout << "Warning, could not replay sample: " << portHandle->inputDataStream.getName() << " " << indexInStream << std::endl;
         return false;
     }
-    
+
     try
     {
         portHandle->transport->unmarshal(data, portHandle->transportHandle);
     }
-    catch (...)
+    catch(...)
     {
         std::cout << "caught marshall error..." << std::endl;
         return false;
     }
-    
+
     return true;
 }
-
 
 void LogTask::checkTaskStateChange(std::unique_ptr<PortHandle>& portHandle)
 {
@@ -164,25 +161,25 @@ void LogTask::checkTaskStateChange(std::unique_ptr<PortHandle>& portHandle)
     {
         switch(std::stoi(portHandle->sample.get()->toString()))
         {
-            case 0:  // INIT
-                task->configure();
-                break;
-            case 1:  // PRE_OPERATIONAL
-                break;
-            case 2: // FATAL_ERROR
-                break;
-            case 3: // EXCEPTION
-                break;
-            case 4: // STOPPED
-                task->stop();
-                break;
-            case 5: // RUNNING
-                task->start();
-                break;
-            case 6:  // RUNTIME_ERROR
-                break;
-            default:
-                task->start();
+        case 0: // INIT
+            task->configure();
+            break;
+        case 1: // PRE_OPERATIONAL
+            break;
+        case 2: // FATAL_ERROR
+            break;
+        case 3: // EXCEPTION
+            break;
+        case 4: // STOPPED
+            task->stop();
+            break;
+        case 5: // RUNNING
+            task->start();
+            break;
+        case 6: // RUNTIME_ERROR
+            break;
+        default:
+            task->start();
         }
     }
 }
@@ -195,13 +192,11 @@ LogTask::PortCollection LogTask::getPortCollection()
         const auto& portHandle = portHandlePair.second;
         collection.emplace_back(portHandle->name, portHandle->inputDataStream.getCXXType());
     }
-    
+
     return collection;
 }
-
 
 std::string LogTask::getName()
 {
     return prefixedName;
 }
-

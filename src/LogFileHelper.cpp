@@ -5,9 +5,9 @@
 std::vector<std::string> LogFileHelper::parseFileNames(const std::vector<std::string> commandLineArgs)
 {
     using namespace boost::filesystem;
-    
+
     std::vector<std::string> filenames;
-    
+
     for(const auto& arg : commandLineArgs)
     {
         if(exists(arg))
@@ -27,16 +27,15 @@ std::vector<std::string> LogFileHelper::parseFileNames(const std::vector<std::st
                 filenames.emplace_back(arg);
             }
         }
-
     }
-    
+
     return filenames;
 }
 
 std::pair<std::string, std::string> LogFileHelper::splitStreamName(const std::string& streamName)
 {
-    std::string taskName = streamName;        
-    
+    std::string taskName = streamName;
+
     size_t pos = taskName.find('/');
     if(taskName.size() && pos != std::string::npos)
     {

@@ -5,36 +5,34 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-
-ReplayGui::ReplayGui(QMainWindow *parent)
+ReplayGui::ReplayGui(QMainWindow* parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
-    
+
     // initing models
     tasksModel = new QStandardItemModel();
-    ui.taskNameList->setModel(tasksModel);    
+    ui.taskNameList->setModel(tasksModel);
     ui.taskNameList->setAlternatingRowColors(true);
 
     tasksModel->setColumnCount(2);
     tasksModel->setHorizontalHeaderLabels(QStringList({"Taskname", "Type"}));
     ui.taskNameList->setColumnWidth(0, 300);
-    
-    
+
     // timer
     statusUpdateTimer = new QTimer();
     statusUpdateTimer->setInterval(10);
     checkFinishedTimer = new QTimer();
     checkFinishedTimer->setInterval(10);
-    
+
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     ui.curPortName->setPalette(palette);
-            
+
     // icons
     playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
     pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
-        
+
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
     QObject::connect(ui.stopButton, SIGNAL(clicked()), this, SLOT(stopPlay()));
@@ -48,10 +46,8 @@ ReplayGui::ReplayGui(QMainWindow *parent)
     QObject::connect(checkFinishedTimer, SIGNAL(timeout()), this, SLOT(handleRestart()));
     QObject::connect(ui.infoAbout, SIGNAL(triggered()), this, SLOT(showInfoAbout()));
     QObject::connect(ui.actionOpenLogfile, SIGNAL(triggered()), this, SLOT(showOpenFile()));
-    QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(handleItemChanged(QStandardItem *)));
+    QObject::connect(tasksModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(handleItemChanged(QStandardItem*)));
 }
-
-
 
 ReplayGui::~ReplayGui()
 {
@@ -61,29 +57,28 @@ ReplayGui::~ReplayGui()
 void ReplayGui::initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix)
 {
     replayHandler.init(fileNames, prefix);
-    
+
     QString title;
     // window title
     switch(fileNames.size())
     {
-        case 0:
-            title = "Rock-Replay";
-            break;
-        case 1:
-            title = QString(fileNames[0].c_str());
-            break;
-        default:
-            title = QString("Multi Logfile Replay");
-            break;
-    }        
-    
+    case 0:
+        title = "Rock-Replay";
+        break;
+    case 1:
+        title = QString(fileNames[0].c_str());
+        break;
+    default:
+        title = QString("Multi Logfile Replay");
+        break;
+    }
+
     replayHandler.setReplaySpeed(ui.speedBox->value());
     ui.progressSlider->setMaximum(replayHandler.getMaxIndex());
-    
+
     this->setWindowTitle(title);
     statusUpdate();
 }
-
 
 // #######################################
 // ######### SLOT IMPLEMENTATION #########
@@ -101,7 +96,7 @@ void ReplayGui::setIntervalA()
         ui.intervalAButton->setText("X");
         replayHandler.setMinSpan(replayHandler.getCurIndex());
     }
-    
+
     statusUpdate();
 }
 
@@ -117,7 +112,7 @@ void ReplayGui::setIntervalB()
         ui.intervalBButton->setText("X");
         replayHandler.setMaxSpan(replayHandler.getCurIndex());
     }
-    
+
     statusUpdate();
 }
 
@@ -137,7 +132,6 @@ void ReplayGui::togglePlay()
     }
 }
 
-
 void ReplayGui::handleRestart()
 {
     if(replayHandler.hasFinished())
@@ -153,7 +147,6 @@ void ReplayGui::handleRestart()
     }
 }
 
-
 void ReplayGui::setGuiPlaying()
 {
     ui.playButton->setChecked(true);
@@ -167,7 +160,6 @@ void ReplayGui::setGuiPlaying()
     ui.intervalBButton->setEnabled(false);
     statusUpdate();
 }
-
 
 void ReplayGui::setGuiPaused()
 {
@@ -183,16 +175,15 @@ void ReplayGui::setGuiPaused()
     statusUpdate();
 }
 
-
 void ReplayGui::statusUpdate()
 {
     QString interval = "    [" + QString::number(replayHandler.getMinSpan()) + "/" + QString::number(replayHandler.getMaxSpan()) + "]";
-    ui.curSampleNum->setText(QString::number(replayHandler.getCurIndex()) + "/" + QString::number(replayHandler.getMaxIndex())+ interval);
+    ui.curSampleNum->setText(QString::number(replayHandler.getCurIndex()) + "/" + QString::number(replayHandler.getMaxIndex()) + interval);
     ui.curTimestamp->setText(replayHandler.getCurTimeStamp().c_str());
     ui.curPortName->setText(replayHandler.getCurSamplePortName().c_str());
     ui.curPortName->setAutoFillBackground(!replayHandler.canSampleBeReplayed());
-    ui.progressSlider->setSliderPosition(replayHandler.getCurIndex()); 
-    ui.speedBar->setValue(replayHandler.getCurrentSpeed() * 100);    
+    ui.progressSlider->setSliderPosition(replayHandler.getCurIndex());
+    ui.speedBar->setValue(replayHandler.getCurrentSpeed() * 100);
 }
 
 void ReplayGui::stopPlay()
@@ -201,7 +192,6 @@ void ReplayGui::stopPlay()
     setGuiPaused();
     statusUpdate();
 }
-
 
 void ReplayGui::setSpeedBox()
 {
@@ -230,14 +220,14 @@ void ReplayGui::progressSliderUpdate()
 void ReplayGui::showOpenFile()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select logfile(s)", "", "Logfiles: *.log");
-    QStringList fileNamesCopy = fileNames;  // doc says so
+    QStringList fileNamesCopy = fileNames; // doc says so
 
     std::vector<std::string> stdStrings;
     for(QList<QString>::iterator it = fileNamesCopy.begin(); it != fileNamesCopy.end(); it++)
     {
         stdStrings.push_back(it->toStdString());
     }
-    
+
     stopPlay();
     replayHandler.deinit();
     initReplayHandler(stdStrings, "");
@@ -245,55 +235,46 @@ void ReplayGui::showOpenFile()
     statusUpdate();
 }
 
-
-
 void ReplayGui::showInfoAbout()
 {
-    QMessageBox::information(this, "Credits",
-                             QString("PICOL iconset: http://www.picol.org\n"), QMessageBox::Ok, 0);
+    QMessageBox::information(this, "Credits", QString("PICOL iconset: http://www.picol.org\n"), QMessageBox::Ok, 0);
 }
-
 
 void ReplayGui::handleItemChanged(QStandardItem* item)
 {
     const QModelIndex index = tasksModel->indexFromItem(item);
-    QItemSelectionModel *selModel = ui.taskNameList->selectionModel();
+    QItemSelectionModel* selModel = ui.taskNameList->selectionModel();
     const std::string portName = item->text().toStdString();
     replayHandler.activateReplayForPort(item->parent()->text().toStdString(), portName, item->checkState() == Qt::Checked);
     selModel->select(QItemSelection(index, index), item->checkState() == Qt::Checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect);
 }
-
-
 
 void ReplayGui::updateTaskView()
 {
     while(tasksModel->rowCount() > 0)
     {
         QList<QStandardItem*> rows = tasksModel->takeRow(0);
-        for(QStandardItem *item : rows)
+        for(QStandardItem* item : rows)
             delete item;
     }
 
-    
     for(const auto& taskName2Ports : replayHandler.getTaskNamesWithPorts())
     {
-        TreeViewItem *task = new TreeViewItem(taskName2Ports.first);
+        TreeViewItem* task = new TreeViewItem(taskName2Ports.first);
         task->setCheckable(false);
-        
+
         QList<QStandardItem*> portTypes;
         for(const auto& portName : taskName2Ports.second)
         {
-            QStandardItem *port = new QStandardItem(portName.first.c_str());
+            QStandardItem* port = new QStandardItem(portName.first.c_str());
             port->setCheckable(true);
             port->setData(Qt::Checked, Qt::CheckStateRole);
             task->appendRow(port);
             portTypes.push_back(new QStandardItem(portName.second.c_str()));
         }
-        
+
         task->appendColumn(portTypes);
-     
+
         tasksModel->appendRow(task);
     }
 }
-
-
