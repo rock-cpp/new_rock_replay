@@ -124,58 +124,58 @@ public slots:
      *
      */
     void statusUpdate();
-    
+
     /**
      * @brief Forwards the value of the speed box to the replay handler.
      *
      */
     void setSpeedBox();
-    
+
     /**
      * @brief Sets the replay index pointer one step further.
-     * 
+     *
      */
     void forward();
-    
+
     /**
      * @brief Sets the replay index pointer one step back.
-     * 
+     *
      */
     void backward();
-    
+
     /**
      * @brief Forwards the value of the progress slider to the replay handler.
-     * 
+     *
      */
     void progressSliderUpdate();
-    
+
     /**
      * @brief Shows the about info and credits.
-     * 
+     *
      */
     void showInfoAbout();
-    
+
     /**
      * @brief Opens a dialog to open new log files.
-     * 
+     *
      */
     void showOpenFile();
-    
+
     /**
      * @brief Handles a restart of replaying when repeat option is enabled.
-     * 
+     *
      */
     void handleRestart();
-    
+
     /**
      * @brief Sets the minimum span.
-     * 
+     *
      */
     void setIntervalA();
-    
+
     /**
      * @brief Sets the maximum span.
-     * 
+     *
      */
     void setIntervalB();
 };

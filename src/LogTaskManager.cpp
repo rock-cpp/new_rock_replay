@@ -7,7 +7,6 @@
 LogTaskManager::LogTaskManager()
 {
     orocos_cpp::OrocosCppConfig config;
-    orocos_cpp::OrocosCpp orocos;
     orocos.initialize(config);
 }
 
@@ -71,7 +70,10 @@ LogTaskManager::TaskCollection LogTaskManager::getTaskCollection()
     return taskNames2PortInfos;
 }
 
-size_t LogTaskManager::getNumSamples() { return multiFileIndex.getSize(); }
+size_t LogTaskManager::getNumSamples()
+{
+    return multiFileIndex.getSize();
+}
 
 void LogTaskManager::createLogTasks()
 {
