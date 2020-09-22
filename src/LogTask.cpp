@@ -82,12 +82,13 @@ std::unique_ptr<LogTask::PortHandle> LogTask::createPortHandle(const std::string
         return nullptr;
     }
 
-    //TODO check if local type is same as logfile type
+    // TODO check if local type is same as logfile type
 
     try
     {
         auto transportHandle = typekitTransport->createSample();
-        PortHandle* portHandle = new PortHandle(portName, typekitTransport, typekitTransport->getDataSource(transportHandle), transportHandle, writer, true, inputStream);
+        PortHandle* portHandle =
+            new PortHandle(portName, typekitTransport, typekitTransport->getDataSource(transportHandle), transportHandle, writer, true, inputStream);
         return std::unique_ptr<PortHandle>(portHandle);
     }
     catch(const RTT::internal::bad_assignment& ba)

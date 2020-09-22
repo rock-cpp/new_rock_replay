@@ -1,7 +1,13 @@
 ﻿---
 AccessModifierOffset: '-4'
 AlignAfterOpenBracket: AlwaysBreak
+AllowShortFunctionsOnASingleLine: 'false'
+AllowShortIfStatementsOnASingleLine: 'false'
+#AllowShortLambdasOnASingleLine: 'true'
+AllowShortLoopsOnASingleLine: 'false'
+AlignTrailingComments: 'true'
 BreakBeforeBraces: Custom
+BreakConstructorInitializers: 'BeforeComma'
 BraceWrapping:
   AfterClass: 'true'
   AfterFunction: 'true'
@@ -10,8 +16,10 @@ BraceWrapping:
   BeforeCatch: 'true'
   BeforeElse: 'true'
 CompactNamespaces: 'true'
-ColumnLimit: '0'
+ColumnLimit: '150'
 Cpp11BracedListStyle: 'true'
+FixNamespaceComments: 'true'
+IndentCaseLabels: 'false'
 IndentWidth: '4'
 IncludeBlocks: 'Regroup'
 KeepEmptyLinesAtTheStartOfBlocks: 'true'

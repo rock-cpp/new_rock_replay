@@ -11,9 +11,9 @@
 
 /**
  * @brief Class that handles the instantiation of LogTasks and their ports.
- * It takes ownership of all instantiated LogTasks and MultiFileIndex streams and 
+ * It takes ownership of all instantiated LogTasks and MultiFileIndex streams and
  * offers a convenient interface, abstracting the MultiFileIndex structure.
- * 
+ *
  */
 class LogTaskManager
 {
@@ -67,7 +67,7 @@ public:
 
     /**
      * @brief Initializes the LogTaskManager with new LogTasks and a optionally with a prefix.
-     * 
+     *
      * @param fileNames: List of filenames to load. Filenames must be absolute.
      * @param prefix: Prefix to add for all LogTasks.
      */
@@ -76,7 +76,7 @@ public:
     /**
      * @brief Sets the replay pointer to the given index. The sample
      * is not actually replayed after this method is called.
-     * 
+     *
      * @param index: Index to set. Index is clamped if min/max span is set.
      * @return LogTaskManager::SampleMetadata Struct containing metadata of current sample.
      */
@@ -84,7 +84,7 @@ public:
 
     /**
      * @brief Replays the currently set sample.
-     * 
+     *
      * @return bool True if the sample was replayed successfully, false otherwise (e.g. on marshal error).
      */
     bool replaySample();
@@ -100,14 +100,14 @@ public:
 
     /**
      * @brief Returns a map of task names to a list of their ports with types.
-     * 
+     *
      * @return LogTaskManager::TaskCollection Structure containing task names with list of ports and types.
      */
     TaskCollection getTaskCollection();
 
     /**
      * @brief Returns the number of samples found in the logfiles.
-     * 
+     *
      * @return size_t Number of samples.
      */
     size_t getNumSamples();
@@ -115,14 +115,14 @@ public:
 private:
     /**
      * @brief Creates LogTasks from MultiFileIndex streams.
-     * 
+     *
      */
     void createLogTasks();
 
     /**
      * @brief Searches for a LogTask given the stream name. If no LogTask
      * was instantiated for the stream, a new one is created and inserted.
-     * 
+     *
      * @param streamName: Name of the stream as defined in the MultiFileIndex.
      * @return LogTask& Reference to the corresponding LogTask for the stream.
      */
@@ -130,7 +130,7 @@ private:
 
     /**
      * @brief Prefix for all LogTasks.
-     * 
+     *
      */
     std::string prefix;
 
@@ -138,26 +138,26 @@ private:
      * @brief MultiFileIndex containing all datastreams from logfiles.
      * This class has the ownership. If the MultiFileIndex is cleared, all
      * LogTasks must be deleted beforehand as they become invalid.
-     * 
+     *
      */
     pocolog_cpp::MultiFileIndex multiFileIndex;
 
     /**
      * @brief Orocos api object. Gets forwarded to LogTasks to instantiate the Orocos tasks.
-     * 
+     *
      */
     orocos_cpp::OrocosCpp orocos;
 
     /**
      * @brief Function to call when the previously selected sample should be replayed.
      * Used to decouple setting of index (and thus getting metadata information) and actual replay.
-     * 
+     *
      */
     std::function<bool()> replayCallback;
 
     /**
      * @brief Container that maps stream names (as trajectory_follower.motion_command) to their correspoding LogTask instances.
-     * 
+     *
      */
     std::map<std::string, std::shared_ptr<LogTask>> streamName2LogTask;
 };

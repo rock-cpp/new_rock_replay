@@ -71,10 +71,7 @@ LogTaskManager::TaskCollection LogTaskManager::getTaskCollection()
     return taskNames2PortInfos;
 }
 
-size_t LogTaskManager::getNumSamples()
-{
-    return multiFileIndex.getSize();
-}
+size_t LogTaskManager::getNumSamples() { return multiFileIndex.getSize(); }
 
 void LogTaskManager::createLogTasks()
 {

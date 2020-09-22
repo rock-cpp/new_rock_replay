@@ -30,8 +30,10 @@ ReplayGui::ReplayGui(QMainWindow* parent)
     ui.curPortName->setPalette(palette);
 
     // icons
-    playIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
-    pauseIcon.addFile(QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
+    playIcon.addFile(
+        QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
+    pauseIcon.addFile(
+        QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_pause.svg"), QSize(), QIcon::Normal, QIcon::On);
 
     // slot connections
     QObject::connect(ui.playButton, SIGNAL(clicked()), this, SLOT(togglePlay()));
@@ -260,7 +262,7 @@ void ReplayGui::updateTaskView()
 
     for(const auto& taskName2Ports : replayHandler.getTaskNamesWithPorts())
     {
-        TreeViewItem* task = new TreeViewItem(taskName2Ports.first);
+        auto* task = new QStandardItem(taskName2Ports.first.c_str());
         task->setCheckable(false);
 
         QList<QStandardItem*> portTypes;
