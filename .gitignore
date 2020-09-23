@@ -3,3 +3,4 @@ build/
 *.kdev*
 orocos.log
 *.idx*
+*.ior
