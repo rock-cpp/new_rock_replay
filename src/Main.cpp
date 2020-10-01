@@ -21,7 +21,7 @@ bool parseArguments(int argc, char* argv[])
     options_description desc("Usage: rock-replay2 {logfile|*}.log or folder\nAvailable options");
     desc.add_options()
         ("help", "show this message")
-        ("prefix", value<std::string>(), "add prefix to all tasks")
+        ("prefix", value<std::string>(&prefix), "add prefix to all tasks")
         ("log-files", value<std::vector<std::string>>(&fileArgs), "log files");
 
     positional_options_description p;
@@ -36,11 +36,6 @@ bool parseArguments(int argc, char* argv[])
     {
         std::cout << desc << std::endl;
         return false;
-    }
-
-    if(vm.count("prefix"))
-    {
-        prefix = vm["prefix"].as<std::string>();
     }
 
     return true;
