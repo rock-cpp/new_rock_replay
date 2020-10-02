@@ -8,6 +8,7 @@ find_package(Rock)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options("--coverage")
 
 rock_init()
 rock_standard_layout()

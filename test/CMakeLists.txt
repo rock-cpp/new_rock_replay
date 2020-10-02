@@ -1,8 +1,9 @@
 rock_testsuite(
     test_suite
         Main.cpp
-        ReplayHandlerTest.cpp
         LogFileHelperTest.cpp
+        LogTaskManagerTest.cpp
+        ReplayHandlerTest.cpp
     DEPS 
         rock_replay
 )

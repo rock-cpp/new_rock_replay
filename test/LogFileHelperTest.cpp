@@ -52,6 +52,14 @@ BOOST_AUTO_TEST_CASE(TestStreamNameSplitMultiDot)
     testStreamSplit(first + "." + second, first, second);
 }
 
+BOOST_AUTO_TEST_CASE(TestStreamNameSplitSlash)
+{
+    const std::string first = "trajectory_follower.my_port/nested";
+    const std::string second = "my_member";
+    
+    testStreamSplit(first + "." + second, first, second);
+}
+
 BOOST_AUTO_TEST_CASE(TestStreamNameEmpty)
 {
     testStreamSplit("", "", "");
