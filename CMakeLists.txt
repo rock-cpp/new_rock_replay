@@ -12,5 +12,3 @@ add_compile_options("--coverage")
 
 rock_init()
 rock_standard_layout()
-
-add_subdirectory(test)
