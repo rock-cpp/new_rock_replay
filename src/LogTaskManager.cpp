@@ -14,8 +14,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
 {
     this->prefix = prefix;
     streamName2LogTask.clear();
-    multiFileIndex = pocolog_cpp::MultiFileIndex();
-    //     multiFileIndex = pocolog_cpp::MultiFileIndex(false);
+    multiFileIndex = pocolog_cpp::MultiFileIndex(false);
     multiFileIndex.registerStreamCheck([&](pocolog_cpp::Stream* st) {
         std::cout << "Checking " << st->getName() << std::endl;
         return dynamic_cast<pocolog_cpp::InputDataStream*>(st);
@@ -40,17 +39,16 @@ LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
     {
     }
 
-    return {"", base::Time::fromString(""), false};
+    return {"", base::Time(), false};
 }
 
 bool LogTaskManager::replaySample()
 {
     try
     {
-        //         return replayCallback(); //TODO: give replay feedback and reset und stop
-        replayCallback();
+        return replayCallback(); // TODO: give replay feedback and reset und stop
     }
-    catch(std::runtime_error& e)
+    catch(...)
     {
         return false;
     }
