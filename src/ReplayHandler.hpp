@@ -247,6 +247,11 @@ private:
     void calculateRelativeSpeed();
 
     /**
+     * @brief Sets the timestamps at the beginning of a playing-step.
+     */
+    void setTimeStampBaselines();
+
+    /**
      * @brief Target speed.
      *
      */

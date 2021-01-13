@@ -34,7 +34,11 @@ void ReplayHandler::deinit()
         running = false;
     }
     playCondition.notify_one();
-    replayThread.join();
+
+    if(replayThread.joinable())
+    {
+        replayThread.join();
+    }
 }
 
 std::map<std::string, std::vector<std::pair<std::string, std::string>>> ReplayHandler::getTaskNamesWithPorts()
@@ -46,13 +50,7 @@ void ReplayHandler::replaySamples()
 {
     while(running)
     {
-        timeBeforeSleep = base::Time::now();
-        timeToSleep = 0;
-
-        {
-            std::unique_lock<std::mutex> lock(playMutex);
-            playCondition.wait(lock, [this] { return playing || !running; });
-        }
+        setTimeStampBaselines();
 
         while(playing)
         {
@@ -91,6 +89,17 @@ void ReplayHandler::calculateRelativeSpeed()
     else
     {
         currentSpeed = 1;
+    }
+}
+
+void ReplayHandler::setTimeStampBaselines()
+{
+    timeBeforeSleep = base::Time::now();
+    timeToSleep = 0;
+
+    {
+        std::unique_lock<std::mutex> lock(playMutex);
+        playCondition.wait(lock, [this] { return playing || !running; });
     }
 }
 
@@ -162,7 +171,9 @@ void ReplayHandler::pause()
     currentSpeed = 0;
 }
 
+//GCOVR_EXCL_START
 void ReplayHandler::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
 {
     manager.activateReplayForPort(taskName, portName, on);
 }
+//GCOVR_EXCL_STOP
