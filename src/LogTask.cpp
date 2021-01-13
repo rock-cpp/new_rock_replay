@@ -201,3 +201,8 @@ std::string LogTask::getName()
 {
     return prefixedName;
 }
+
+bool LogTask::isValid()
+{
+    return task.get();
+}

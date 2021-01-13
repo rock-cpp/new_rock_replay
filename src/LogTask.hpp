@@ -157,6 +157,13 @@ public:
      */
     std::string getName();
 
+    /**
+     * @brief Returns if the LogTask is valid, e.g. a typekit could be loaded/found for the task
+     * 
+     * @return bool True if the LogTask was successfully initialized, false otherwise.
+     */
+    bool isValid();
+
 private:
     /**
      * @brief Creates a PortHandle given the port name and corresponding InputDataStream from logfile.
