@@ -7,6 +7,7 @@
 #include <pocolog_cpp/MultiFileIndex.hpp>
 #include <rtt/InputPort.hpp>
 #include <rtt/base/InputPortInterface.hpp>
+#include <thread>
 #include <trajectory_follower/TrajectoryFollowerTypes.hpp>
 
 const auto fileNames = LogFileHelper::parseFileNames({"../logs/trajectory_follower_Logger.0.log"});
@@ -69,28 +70,45 @@ BOOST_AUTO_TEST_CASE(TestStreamLoadingSuccessful)
 //     BOOST_TEST(slamMultiFile.getAllStreams().size() == 1);
 // }
 
-BOOST_AUTO_TEST_CASE(TestPortReplay)
+void replayAllSamplesOfTask(std::unique_ptr<LogTask>& logTask)
 {
-    auto trajectoryFollower = orocos.getTaskContext("trajectory_follower");
-
-    RTT::base::InputPortInterface* followerData = trajectoryFollower->getPort("follower_data")->getTypeInfo()->inputPort("follower_data_reader");
-    auto sample = followerData->getDataSource();
-
-    trajectoryFollowerTask->activateLoggingForPort("follower_data");
-
     for(size_t i = 0; i < multiFileIndex.getSize(); i++)
     {
         pocolog_cpp::InputDataStream* inputStream = dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getSampleStream(i));
 
-        if(inputStream->getName() == "trajectory_follower.follower_data")
+        if(inputStream->getName().find(logTask->getName()) != std::string::npos)
         {
-            std::cout << "replay follower data" << std::endl;
-            trajectoryFollowerTask->replaySample(inputStream->getIndex(), multiFileIndex.getPosInStream(i));
+            logTask->replaySample(inputStream->getIndex(), multiFileIndex.getPosInStream(i));
         }
     }
+}
 
-    // while(followerData->read(sample) != RTT::FlowStatus::NewData)
-    // {
+template <typename PortType> RTT::InputPort<PortType>* createPortReader(const std::string& taskName, const std::string& portName)
+{
+    auto task = orocos.getTaskContext(taskName);
+    auto port = task->getPort(portName);
+    auto reader = dynamic_cast<RTT::InputPort<PortType>*>(port->antiClone());
+    
+    reader->setName(portName + "_reader");
+    task->addPort(*reader);
+    reader->connectTo(port, RTT::ConnPolicy());
 
-    // }
+    return reader;
+}
+
+BOOST_AUTO_TEST_CASE(TestPortReplay)
+{
+    auto portReader = createPortReader<base::commands::Motion2D>("trajectory_follower", "motion_command");
+    trajectoryFollowerTask->activateLoggingForPort("motion_command");
+
+    std::thread t = std::thread([&]() { replayAllSamplesOfTask(trajectoryFollowerTask); });
+
+    auto sample = portReader->getDataSource();
+    while(portReader->read(sample) != RTT::FlowStatus::NewData)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        sample = portReader->getDataSource();
+    }
+
+    t.join();
 }
