@@ -209,6 +209,7 @@ private:
      * 
      * @param inputStream: InputDataStream to check.
      * @return bool True if the stream is suitable for the task, false otherwise.
+     */
     bool isStreamForThisTask(const pocolog_cpp::InputDataStream& inputStream);
 
     /**
