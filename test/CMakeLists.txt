@@ -1,10 +1,10 @@
 rock_testsuite(
     test_suite
         Main.cpp
-        #LogFileHelperTest.cpp
-        #LogTaskManagerTest.cpp
+        LogFileHelperTest.cpp
+        LogTaskManagerTest.cpp
         LogTaskTest.cpp
-        #ReplayHandlerTest.cpp
+        ReplayHandlerTest.cpp
     DEPS 
         rock_replay
     DEPS_PKGCONFIG

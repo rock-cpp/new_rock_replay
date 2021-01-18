@@ -17,11 +17,18 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
     multiFileIndex = pocolog_cpp::MultiFileIndex(false);
     multiFileIndex.registerStreamCheck([&](pocolog_cpp::Stream* st) {
         std::cout << "Checking " << st->getName() << std::endl;
-        return dynamic_cast<pocolog_cpp::InputDataStream*>(st);
+
+        pocolog_cpp::InputDataStream* inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(st);
+        if(inputSt)
+        {
+            LogTask& logTask = findOrCreateLogTask(inputSt->getName());
+            return logTask.addStream(*inputSt);
+        }
+
+        return false;
     });
 
     multiFileIndex.createIndex(fileNames);
-    createLogTasks();
 }
 
 LogTaskManager::SampleMetadata LogTaskManager::setIndex(size_t index)
@@ -46,7 +53,7 @@ bool LogTaskManager::replaySample()
 {
     try
     {
-        return replayCallback(); // TODO: give replay feedback and reset und stop
+        return replayCallback(); // TODO: give replay feedback and reset und stop. Maybe differentiate between deactivated ports and ports with no handles.
     }
     catch(...)
     {
@@ -71,19 +78,6 @@ LogTaskManager::TaskCollection LogTaskManager::getTaskCollection()
 size_t LogTaskManager::getNumSamples()
 {
     return multiFileIndex.getSize();
-}
-
-void LogTaskManager::createLogTasks()
-{
-    for(pocolog_cpp::Stream* st : multiFileIndex.getAllStreams())
-    {
-        pocolog_cpp::InputDataStream* inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(st);
-        if(inputSt)
-        {
-            LogTask& logTask = findOrCreateLogTask(inputSt->getName());
-            logTask.addStream(*inputSt);
-        }
-    }
 }
 
 LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)

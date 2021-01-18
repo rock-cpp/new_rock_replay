@@ -47,21 +47,22 @@ void LogTask::activateLoggingForPort(const std::string& portName, bool activate)
     }
 }
 
-void LogTask::addStream(pocolog_cpp::InputDataStream& stream)
+bool LogTask::addStream(pocolog_cpp::InputDataStream& stream)
 {
-    const auto portName = LogFileHelper::splitStreamName(stream.getName()).second;
-
-    auto portHandle = createPortHandle(portName, stream);
-    if(portHandle && task && !task->getPort(portName))
+    if(isStreamForThisTask(stream))
     {
-        task->ports()->addPort(portHandle->port->getName(), *portHandle->port);
-    }
-    else
-    {
-        portHandle = std::unique_ptr<PortHandle>(new PortHandle(portName, nullptr, nullptr, nullptr, nullptr, false, stream));
+        const auto portName = LogFileHelper::splitStreamName(stream.getName()).second;
+
+        auto portHandle = createPortHandle(portName, stream);
+        if(portHandle && task && !task->getPort(portName))
+        {
+            task->ports()->addPort(portHandle->port->getName(), *portHandle->port);
+            streamIdx2Port.emplace(stream.getIndex(), std::move(portHandle));
+            return true;
+        }
     }
 
-    streamIdx2Port.emplace(stream.getIndex(), std::move(portHandle));
+    return false;
 }
 
 std::unique_ptr<LogTask::PortHandle> LogTask::createPortHandle(const std::string& portName, pocolog_cpp::InputDataStream& inputStream)
@@ -82,7 +83,7 @@ std::unique_ptr<LogTask::PortHandle> LogTask::createPortHandle(const std::string
         return nullptr;
     }
 
-    // TODO check if local type is same as logfile type
+    // TODO: check if local type is same as logfile type
 
     try
     {
@@ -183,6 +184,12 @@ void LogTask::checkTaskStateChange(std::unique_ptr<PortHandle>& portHandle)
             task->start();
         }
     }
+}
+
+bool LogTask::isStreamForThisTask(const pocolog_cpp::InputDataStream& inputStream)
+{
+    auto taskName = LogFileHelper::splitStreamName(inputStream.getName()).first;
+    return prefixedName.find(taskName) != std::string::npos;
 }
 
 LogTask::PortCollection LogTask::getPortCollection()

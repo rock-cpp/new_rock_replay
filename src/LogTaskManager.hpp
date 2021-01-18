@@ -114,12 +114,6 @@ public:
 
 private:
     /**
-     * @brief Creates LogTasks from MultiFileIndex streams.
-     *
-     */
-    void createLogTasks();
-
-    /**
      * @brief Searches for a LogTask given the stream name. If no LogTask
      * was instantiated for the stream, a new one is created and inserted.
      *

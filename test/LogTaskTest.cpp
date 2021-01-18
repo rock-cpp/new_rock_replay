@@ -61,14 +61,30 @@ BOOST_AUTO_TEST_CASE(TestStreamLoadingSuccessful)
     BOOST_TEST(expectedPorts.empty());
 }
 
-// BOOST_AUTO_TEST_CASE(TestStreamLoadingWithWrongStream)
-// {
-//     pocolog_cpp::MultiFileIndex slamMultiFile = pocolog_cpp::MultiFileIndex(false);
-//     slamMultiFile.registerStreamCheck([&](pocolog_cpp::Stream* st) { return dynamic_cast<pocolog_cpp::InputDataStream*>(st); });
-//     slamMultiFile.createIndex(LogFileHelper::parseFileNames({"./logs/contact_point_odometry_Logger.0.log"}));
+BOOST_AUTO_TEST_CASE(TestStreamLoadingWithWrongTask)
+{
+    auto missingTask = createLogTask("non_existing");
+    auto inputStream = *dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getAllStreams().front());
+    bool streamWasAdded = missingTask->addStream(inputStream);
 
-//     BOOST_TEST(slamMultiFile.getAllStreams().size() == 1);
-// }
+    BOOST_TEST(!missingTask->isValid());
+    BOOST_TEST(missingTask->getPortCollection().empty());
+    BOOST_TEST(!streamWasAdded);
+}
+
+BOOST_AUTO_TEST_CASE(TestAddingWrongStream)
+{
+    auto slamMultiFileIndex = pocolog_cpp::MultiFileIndex(false);
+    slamMultiFileIndex.createIndex(LogFileHelper::parseFileNames({"../logs/slam3d_Logger.0.log"}));
+
+    for(const auto& stream : slamMultiFileIndex.getAllStreams())
+    {
+        bool streamWasAdded = trajectoryFollowerTask->addStream(*dynamic_cast<pocolog_cpp::InputDataStream*>(stream));
+        
+        BOOST_TEST(!streamWasAdded);
+        BOOST_TEST(trajectoryFollowerTask->getPortCollection().size() == 3);
+    }
+}
 
 void replayAllSamplesOfTask(std::unique_ptr<LogTask>& logTask)
 {
@@ -88,7 +104,7 @@ template <typename PortType> RTT::InputPort<PortType>* createPortReader(const st
     auto task = orocos.getTaskContext(taskName);
     auto port = task->getPort(portName);
     auto reader = dynamic_cast<RTT::InputPort<PortType>*>(port->antiClone());
-    
+
     reader->setName(portName + "_reader");
     task->addPort(*reader);
     reader->connectTo(port, RTT::ConnPolicy());
@@ -99,16 +115,31 @@ template <typename PortType> RTT::InputPort<PortType>* createPortReader(const st
 BOOST_AUTO_TEST_CASE(TestPortReplay)
 {
     auto portReader = createPortReader<base::commands::Motion2D>("trajectory_follower", "motion_command");
-    trajectoryFollowerTask->activateLoggingForPort("motion_command");
 
-    std::thread t = std::thread([&]() { replayAllSamplesOfTask(trajectoryFollowerTask); });
+    replayAllSamplesOfTask(trajectoryFollowerTask);
 
     auto sample = portReader->getDataSource();
-    while(portReader->read(sample) != RTT::FlowStatus::NewData)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        sample = portReader->getDataSource();
-    }
+    BOOST_TEST(portReader->read(sample) == RTT::FlowStatus::NewData);
+}
 
-    t.join();
+BOOST_AUTO_TEST_CASE(TestPortReplayDeactivated)
+{
+    auto portReader = createPortReader<base::commands::Motion2D>("trajectory_follower", "motion_command");
+    trajectoryFollowerTask->activateLoggingForPort("motion_command", false);
+
+    replayAllSamplesOfTask(trajectoryFollowerTask);
+
+    auto sample = portReader->getDataSource();
+    BOOST_TEST(portReader->read(sample) == RTT::FlowStatus::NoData);
+}
+
+BOOST_AUTO_TEST_CASE(TestTaskStateChange)
+{
+    auto initialState = orocos.getTaskContext("trajectory_follower")->getTaskState();
+    auto portReader = createPortReader<int>("trajectory_follower", "state");
+
+    replayAllSamplesOfTask(trajectoryFollowerTask);
+
+    BOOST_TEST(portReader->connected());
+    BOOST_TEST(initialState != orocos.getTaskContext("trajectory_follower")->getTaskState());
 }

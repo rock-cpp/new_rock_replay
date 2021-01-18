@@ -6,6 +6,7 @@
 #include <set>
 
 const auto fileNames = LogFileHelper::parseFileNames({"../logs/trajectory_follower_Logger.0.log"});
+const auto fileNamesWithoutTypekits = LogFileHelper::parseFileNames({"../logs/slam3d_Logger.0.log"});
 LogTaskManager manager;
 
 BOOST_AUTO_TEST_CASE(TestSpawnTrajectoryFollower)
@@ -55,15 +56,18 @@ BOOST_AUTO_TEST_CASE(TestTaskActivateReplayForPort)
     BOOST_TEST(!replayedSampleDeactivated);
 }
 
+BOOST_AUTO_TEST_CASE(TestInitWithoutTypekit)
+{
+    manager.init(fileNamesWithoutTypekits, "");
+
+    BOOST_TEST(manager.getTaskCollection().size() == 1);
+    BOOST_TEST(manager.getTaskCollection().at("slam3d").empty());
+}
+
 BOOST_AUTO_TEST_CASE(TestReplayWithException)
 {
-    manager.init(LogFileHelper::parseFileNames({"../logs/slam3d_Logger.0.log"}), "");
+    manager.init(fileNamesWithoutTypekits, "");
     bool canReplay = manager.replaySample();
-    
+
     BOOST_TEST(!canReplay);
 }
-// BOOST_AUTO_TEST_CASE(TestReplay)
-// {
-//     orocos_cpp::OrocosCpp orocos;
-//     auto task = orocos.getTaskContext("trajectory_follower");
-// }

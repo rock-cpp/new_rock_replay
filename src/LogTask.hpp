@@ -121,10 +121,13 @@ public:
 
     /**
      * @brief Adds a stream from the logfile to the task.
+     * The method can return false if either no typekit was found for the
+     * stream, or the stream does not contain data for the task model (name-based check).
      *
      * @param stream: InputDataStream from logfile containing port samples.
+     * @return bool True if stream was added, false otherwise.
      */
-    void addStream(pocolog_cpp::InputDataStream& stream);
+    bool addStream(pocolog_cpp::InputDataStream& stream);
 
     /**
      * @brief Replays a given sample by global stream index and position in that stream.
@@ -199,6 +202,14 @@ private:
      * @param portHandle: PortHandle to check.
      */
     void checkTaskStateChange(std::unique_ptr<PortHandle>& portHandle);
+
+    /**
+     * @brief Checks is the given stream is suitable for the task model.
+     * Check is based on names.
+     * 
+     * @param inputStream: InputDataStream to check.
+     * @return bool True if the stream is suitable for the task, false otherwise.
+    bool isStreamForThisTask(const pocolog_cpp::InputDataStream& inputStream);
 
     /**
      * @brief Contains the possibly prefixed name of the task.
