@@ -28,6 +28,9 @@ Use the `.clang-tidy` file with `clang-tidy` to perform a range of given static 
 ### Test Coverage
 Generate a coverage report with `gcovr` using either the `.gcovr-config` or `.gcovr-config-html` file to avoid regression. Therefore, unit tests must be run from the build folder with `./test/test_suite`. Additionally, run `gcovr --config {config-file}` from the root folder.
 
+## Versioning
+The software is versioned using [Semantic Versioning](https://semver.org/).
+
 ## License
 Todo
 
