@@ -8,7 +8,7 @@ find_package(Rock)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(--coverage -Wall -Werror)
+add_compile_options(--coverage -Wall -Werror -DBOOST_LOG_DYN_LINK)
 
 rock_init()
 rock_standard_layout()

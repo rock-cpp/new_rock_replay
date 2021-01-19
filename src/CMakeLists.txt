@@ -28,7 +28,7 @@ rock_library(rock_replay
         main.ui
 )
 
-target_link_libraries(rock_replay pthread boost_program_options gcov)
+target_link_libraries(rock_replay pthread boost_log boost_program_options gcov)
 
 rock_executable(rock-replay2 
     SOURCES

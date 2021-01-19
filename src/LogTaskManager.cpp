@@ -2,6 +2,7 @@
 
 #include "LogFileHelper.hpp"
 
+#include <boost/log/trivial.hpp>
 #include <orocos_cpp/orocos_cpp.hpp>
 
 LogTaskManager::LogTaskManager()
@@ -16,7 +17,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
     streamName2LogTask.clear();
     multiFileIndex = pocolog_cpp::MultiFileIndex(false);
     multiFileIndex.registerStreamCheck([&](pocolog_cpp::Stream* st) {
-        std::cout << "Checking " << st->getName() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "Checking " << st->getName();
 
         pocolog_cpp::InputDataStream* inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(st);
         if(inputSt)
@@ -53,7 +54,8 @@ bool LogTaskManager::replaySample()
 {
     try
     {
-        return replayCallback(); // TODO: give replay feedback and reset und stop. Maybe differentiate between deactivated ports and ports with no handles.
+        return replayCallback(); // TODO: give replay feedback and reset und stop. Maybe differentiate between deactivated ports and ports with no
+                                 // handles.
     }
     catch(...)
     {

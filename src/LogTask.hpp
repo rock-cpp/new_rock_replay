@@ -162,7 +162,7 @@ public:
 
     /**
      * @brief Returns if the LogTask is valid, e.g. a typekit could be loaded/found for the task
-     * 
+     *
      * @return bool True if the LogTask was successfully initialized, false otherwise.
      */
     bool isValid();
@@ -206,7 +206,7 @@ private:
     /**
      * @brief Checks is the given stream is suitable for the task model.
      * Check is based on names.
-     * 
+     *
      * @param inputStream: InputDataStream to check.
      * @return bool True if the stream is suitable for the task, false otherwise.
      */
