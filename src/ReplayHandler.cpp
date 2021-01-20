@@ -9,9 +9,9 @@ ReplayHandler::~ReplayHandler()
     deinit();
 }
 
-void ReplayHandler::init(const std::vector<std::string>& fileNames, const std::string& prefix)
+void ReplayHandler::init(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList)
 {
-    manager.init(fileNames, prefix);
+    manager.init(fileNames, prefix, whiteList);
     targetSpeed = 1.;
     currentSpeed = 0;
     curIndex = 0;

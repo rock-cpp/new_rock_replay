@@ -101,8 +101,9 @@ public:
      *
      * @param fileNames: List of file names.
      * @param prefix: Prefix for all tasks.
+     * @param whiteList: List of regular expressions to filter whitelisted streams.
      */
-    void init(const std::vector<std::string>& fileNames, const std::string& prefix);
+    void init(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList = {});
 
     /**
      * @brief Deinits the replay handler. Closes all log tasks and allows

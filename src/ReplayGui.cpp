@@ -56,9 +56,9 @@ ReplayGui::~ReplayGui()
     replayHandler.stop();
 }
 
-void ReplayGui::initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix)
+void ReplayGui::initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList)
 {
-    replayHandler.init(fileNames, prefix);
+    replayHandler.init(fileNames, prefix, whiteList);
 
     QString title;
     // window title

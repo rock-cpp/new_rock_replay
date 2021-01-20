@@ -40,8 +40,9 @@ public:
      *
      * @param fileNames: List of file names to load.
      * @param prefix: Optional prefix to set for all log tasks.
+     * @param whiteList: List of regular expressions to filter whitelisted streams.
      */
-    void initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix);
+    void initReplayHandler(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList = {});
 
 protected:
     /**

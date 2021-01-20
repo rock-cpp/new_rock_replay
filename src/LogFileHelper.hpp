@@ -39,4 +39,14 @@ public:
      * @return std::pair<std::string, std::string> Pair consisting of task and port name.
      */
     static std::pair<std::string, std::string> splitStreamName(const std::string& streamName);
+
+    /**
+     * @brief Checks whether a stream name is whitelisted given the list of regular expressions,
+     * An empty list of regular expressions indicates returns always true.
+     * 
+     * @param streamName: Name of the stream.
+     * @param whiteListRegEx: List of regular expressions to check against.
+     * @return True is stream is whitelisted, false otherwise.
+     */
+    static bool isWhiteListed(const std::string& streamName, const std::vector<std::string>& whiteListRegEx);
 };

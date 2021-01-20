@@ -5,6 +5,7 @@ rock_testsuite(
         LogTaskManagerTest.cpp
         LogTaskTest.cpp
         ReplayHandlerTest.cpp
+        WhiteListTest.cpp
     DEPS 
         rock_replay
     DEPS_PKGCONFIG

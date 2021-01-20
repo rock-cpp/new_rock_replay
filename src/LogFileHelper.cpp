@@ -1,6 +1,7 @@
 #include "LogFileHelper.hpp"
 
 #include <boost/filesystem.hpp>
+#include <regex>
 
 std::vector<std::string> LogFileHelper::parseFileNames(const std::vector<std::string> commandLineArgs)
 {
@@ -36,13 +37,31 @@ std::pair<std::string, std::string> LogFileHelper::splitStreamName(const std::st
 {
     std::string taskName = streamName;
 
-    //FIXME: Why to remove /?
-//     size_t pos = taskName.find('/');
-//     if(taskName.size() && pos != std::string::npos)
-//     {
-//         taskName = taskName.substr(pos + 1, taskName.size());
-//     }
+    // FIXME: Why to remove /?
+    //     size_t pos = taskName.find('/');
+    //     if(taskName.size() && pos != std::string::npos)
+    //     {
+    //         taskName = taskName.substr(pos + 1, taskName.size());
+    //     }
 
     size_t portSplitToken = taskName.find_last_of('.');
     return {taskName.substr(0, portSplitToken), taskName.substr(portSplitToken + 1, taskName.size())};
+}
+
+bool LogFileHelper::isWhiteListed(const std::string& streamName, const std::vector<std::string>& whiteListRegEx)
+{
+    if(whiteListRegEx.empty())
+    {
+        return true;
+    }
+
+    for(const auto& entry : whiteListRegEx)
+    {
+        if(std::regex_match(streamName, std::regex(entry)))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -5,8 +5,11 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
 std::string prefix;
+std::string whiteListInput;
+std::vector<std::string> whiteListTokens;
 std::vector<std::string> fileArgs;
 std::vector<std::string> fileNames;
 bool verbose = false;
@@ -26,6 +29,7 @@ bool parseArguments(int argc, char* argv[])
     desc.add_options()
         ("help", "show this message")
         ("prefix", value<std::string>(&prefix), "add prefix to all tasks")
+        ("whitelist", value<std::string>(&whiteListInput), "comma-separated list of regular expressions to filter streams")
         ("verbose", bool_switch(&verbose), "show additional output")
         ("log-files", value<std::vector<std::string>>(&fileArgs), "log files");
 
@@ -43,6 +47,12 @@ bool parseArguments(int argc, char* argv[])
         return false;
     }
 
+    if(vm.count("whitelist"))
+    {
+        boost::tokenizer<boost::char_separator<char>> tokens(whiteListInput, boost::char_separator<char>(","));
+        whiteListTokens.assign(tokens.begin(), tokens.end());
+    }
+
     return true;
 }
 
@@ -55,7 +65,7 @@ int main(int argc, char* argv[])
 
         boost::log::core::get()->set_logging_enabled(verbose);
 
-        gui.initReplayHandler(fileNames, prefix);
+        gui.initReplayHandler(fileNames, prefix, whiteListTokens);
         gui.updateTaskView();
 
         gui.show();

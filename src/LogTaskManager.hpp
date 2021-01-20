@@ -70,8 +70,9 @@ public:
      *
      * @param fileNames: List of filenames to load. Filenames must be absolute.
      * @param prefix: Prefix to add for all LogTasks.
+     * @param whiteList: List of regular expressions to filter whitelisted streams.
      */
-    void init(const std::vector<std::string>& fileNames, const std::string& prefix);
+    void init(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList = {});
 
     /**
      * @brief Sets the replay pointer to the given index. The sample

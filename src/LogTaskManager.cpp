@@ -11,7 +11,7 @@ LogTaskManager::LogTaskManager()
     orocos.initialize(config);
 }
 
-void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::string& prefix)
+void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList)
 {
     this->prefix = prefix;
     streamName2LogTask.clear();
@@ -19,11 +19,18 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
     multiFileIndex.registerStreamCheck([&](pocolog_cpp::Stream* st) {
         BOOST_LOG_TRIVIAL(info) << "Checking " << st->getName();
 
-        pocolog_cpp::InputDataStream* inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(st);
-        if(inputSt)
+        if(LogFileHelper::isWhiteListed(st->getName(), whiteList))
         {
-            LogTask& logTask = findOrCreateLogTask(inputSt->getName());
-            return logTask.addStream(*inputSt);
+            pocolog_cpp::InputDataStream* inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(st);
+            if(inputSt)
+            {
+                LogTask& logTask = findOrCreateLogTask(inputSt->getName());
+                return logTask.addStream(*inputSt);
+            }
+        }
+        else
+        {
+            BOOST_LOG_TRIVIAL(info) << "Skipping non-whitelisted stream " << st->getName();
         }
 
         return false;
