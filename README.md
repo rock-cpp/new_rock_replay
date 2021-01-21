@@ -10,6 +10,8 @@ Usage: rock-replay2 {logfile|*}.log or folder
 Available options:
   --help                show this message
   --prefix arg          add prefix to all tasks
+  --whitelist arg       comma-separated list of regular expressions to filter 
+                        streams
   --verbose             show additional output
   --log-files arg       log files
 ```
