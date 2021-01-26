@@ -19,6 +19,11 @@ ReplayGui::ReplayGui(QMainWindow* parent)
     tasksModel->setHorizontalHeaderLabels(QStringList({"Taskname", "Type"}));
     ui.taskNameList->setColumnWidth(0, 300);
 
+    if(this->palette().color(QPalette::Window).black() > 150)  // dark theme used, background must be dark as well
+    {
+        ui.taskNameList->setPalette(this->palette().color(QPalette::Window));
+    }
+
     // timer
     statusUpdateTimer = new QTimer();
     statusUpdateTimer->setInterval(10);
@@ -28,7 +33,7 @@ ReplayGui::ReplayGui(QMainWindow* parent)
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     ui.curPortName->setPalette(palette);
-
+    
     // icons
     playIcon.addFile(
         QString::fromUtf8(":/icons/icons/Icons-master/picol_latest_prerelease_svg/controls_play.svg"), QSize(), QIcon::Normal, QIcon::On);
