@@ -2,17 +2,18 @@
 
 A fast log file replay package for rock's logging system, written completely in C++. Currently, it utilizes Qt4, which is abandoned in Ubuntu 20.04 and later. Qt5 support is planned to be implemented next.
 
+![](doc/rock_replay2.png)
 
 ## Usage
 Run the following from a terminal with sourced env.sh:
 ```
-Usage: rock-replay2 {logfile|*}.log or folder
+Usage: rock-replay2 {logfile|*}.log or folder.
+Logging can be controled via base-logging variables.
 Available options:
   --help                show this message
   --prefix arg          add prefix to all tasks
   --whitelist arg       comma-separated list of regular expressions to filter 
                         streams
-  --verbose             show additional output
   --log-files arg       log files
 ```
 
@@ -20,15 +21,7 @@ Available options:
 Please use the [GitHub Issue Tracker](https://github.com/rock-cpp/rock_replay/issues) of this repository.
 
 ## Contributing
-
-### Styling
-The repository contains a `.clang-format` file, which contains a fixed styleguide for this project. It can be applied manually with `clang-format` or automatically within your favourite IDE.
-
-### Static Code Analysis
-Use the `.clang-tidy` file with `clang-tidy` to perform a range of given static code checks.
-
-### Test Coverage
-Generate a coverage report with `gcovr` using either the `.gcovr-config` or `.gcovr-config-html` file to avoid regression. Therefore, unit tests must be run from the build folder with `./test/test_suite`. Additionally, run `gcovr --config {config-file}` from the root folder.
+See [here](doc/CONTRIBUTING.md) for information.
 
 ## Versioning
 The software is versioned using [Semantic Versioning](https://semver.org/).
