@@ -21,7 +21,7 @@ bool parseArguments(int argc, char* argv[])
 {
     using namespace boost::program_options;
 
-    options_description desc("Usage: rock-replay2 {logfile|*}.log or folder.\nLogging can be controled via base-logging variables.\nAvailable options");
+    options_description desc("Usage: rock-replay2 {logfile|*}.log or folder.\nLogging can be controlled via base-logging variables.\nAvailable options");
     desc.add_options()
         ("help", "show this message")
         ("prefix", value<std::string>(&prefix), "add prefix to all tasks")

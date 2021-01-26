@@ -8,7 +8,7 @@ A fast log file replay package for rock's logging system, written completely in 
 Run the following from a terminal with sourced env.sh:
 ```
 Usage: rock-replay2 {logfile|*}.log or folder.
-Logging can be controled via base-logging variables.
+Logging can be controlled via base-logging variables.
 Available options:
   --help                show this message
   --prefix arg          add prefix to all tasks
