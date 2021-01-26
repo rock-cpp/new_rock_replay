@@ -8,7 +8,7 @@ find_package(Rock)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(--coverage -Wall -Werror -DBOOST_LOG_DYN_LINK)
+add_compile_options(--coverage -Wall -Werror -DBASE_LOG_NAMESPACE=${PROJECT_NAME})
 
 rock_init()
 rock_standard_layout()

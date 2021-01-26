@@ -2,7 +2,7 @@
 
 #include "LogFileHelper.hpp"
 
-#include <boost/log/trivial.hpp>
+#include <base-logging/Logging.hpp>
 #include <orocos_cpp/orocos_cpp.hpp>
 
 LogTaskManager::LogTaskManager()
@@ -17,7 +17,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
     streamName2LogTask.clear();
     multiFileIndex = pocolog_cpp::MultiFileIndex(false);
     multiFileIndex.registerStreamCheck([&](pocolog_cpp::Stream* st) {
-        BOOST_LOG_TRIVIAL(info) << "Checking " << st->getName();
+        LOG_INFO_S << "Checking " << st->getName();
 
         if(LogFileHelper::isWhiteListed(st->getName(), whiteList))
         {
@@ -30,7 +30,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
         }
         else
         {
-            BOOST_LOG_TRIVIAL(info) << "Skipping non-whitelisted stream " << st->getName();
+            LOG_INFO_S << "Skipping non-whitelisted stream " << st->getName();
         }
 
         return false;

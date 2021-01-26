@@ -1,9 +1,6 @@
 #include "LogFileHelper.hpp"
 #include "ReplayGui.h"
 
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
@@ -12,7 +9,6 @@ std::string whiteListInput;
 std::vector<std::string> whiteListTokens;
 std::vector<std::string> fileArgs;
 std::vector<std::string> fileNames;
-bool verbose = false;
 
 /**
  * @brief Parses the command line arguments.
@@ -25,12 +21,11 @@ bool parseArguments(int argc, char* argv[])
 {
     using namespace boost::program_options;
 
-    options_description desc("Usage: rock-replay2 {logfile|*}.log or folder\nAvailable options");
+    options_description desc("Usage: rock-replay2 {logfile|*}.log or folder.\nLogging can be controled via base-logging variables.\nAvailable options");
     desc.add_options()
         ("help", "show this message")
         ("prefix", value<std::string>(&prefix), "add prefix to all tasks")
         ("whitelist", value<std::string>(&whiteListInput), "comma-separated list of regular expressions to filter streams")
-        ("verbose", bool_switch(&verbose), "show additional output")
         ("log-files", value<std::vector<std::string>>(&fileArgs), "log files");
 
     positional_options_description p;
@@ -62,8 +57,6 @@ int main(int argc, char* argv[])
     {
         QApplication a(argc, argv);
         ReplayGui gui;
-
-        boost::log::core::get()->set_logging_enabled(verbose);
 
         gui.initReplayHandler(fileNames, prefix, whiteListTokens);
         gui.updateTaskView();

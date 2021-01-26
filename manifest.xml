@@ -8,6 +8,8 @@
   <url>http://</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
+  <depend package="base/logging" />
   <depend package="tools/pocolog_cpp" />
   <depend package="tools/orocos_cpp" />"
+  <test_depend package="control/orogen/trajectory_follower" />
 </package>
