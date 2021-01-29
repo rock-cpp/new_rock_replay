@@ -6,3 +6,7 @@ Use the `.clang-tidy` file with `clang-tidy` to perform a range of given static 
 
 ### Test Coverage
 Generate a coverage report with `gcovr` using either the `.gcovr-config` or `.gcovr-config-html` file to avoid regression. Therefore, unit tests must be run from the build folder with `./test/test_suite`. Additionally, run `gcovr --config {config-file}` from the root folder.
+
+### Pull Request
+New features must be submitted via pull requests, beginning with a branch prefix feature/.
+The code is then reviewed and finally merged into the master branch.
