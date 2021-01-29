@@ -1,15 +1,30 @@
 <package>
-  <description brief="A log file replay package">
-  
-  </description>
-  <author>Janosch Machowinski/Janosch.Machowinski@dfki.de</author>
-  <author>Dennis Hemker/Dennis.Hemker@dfki.de</author>
-  <license></license>
-  <url>http://</url>
-  <logo>http://</logo>
-  <depend package="base/cmake" />
-  <depend package="base/logging" />
-  <depend package="tools/pocolog_cpp" />
-  <depend package="tools/orocos_cpp" />"
-  <test_depend package="control/orogen/trajectory_follower" />
+    <description brief="A fast log file replay package">
+        A fast replay tool for rock's logging system, written in C++
+    </description>
+    <author>Dennis Hemker/Dennis.Hemker@dfki.de</author>
+    <maintainer>Dennis Hemker/Dennis.Hemker@dfki.de</maintainer>
+    <license>BSD-3-Clause</license>
+    <url>https://github.com/rock-cpp/rock_replay</url>
+    <logo>http://</logo>
+    <depend package="base/cmake" />
+    <depend package="base/logging" />
+    <depend package="tools/pocolog_cpp" />
+    <depend package="tools/orocos_cpp" />
+    <test_depend package="control/orogen/trajectory_follower" />
+
+    <keywords>
+        <keyword>utilities</keyword>
+    </keywords>
+
+    <activity>active</activity>
+    <stage>1</stage>
+
+    <classifiers>
+        <classifier>gui</classifier>
+        <classifier>c++</classifier>
+        <classifier>rock</classifier>
+        <classifier>ubuntu</classifier>
+    </classifiers>
+
 </package>

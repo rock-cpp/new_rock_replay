@@ -26,11 +26,11 @@ See [here](doc/CONTRIBUTING.md) for information.
 ## Versioning
 The software is versioned using [Semantic Versioning](https://semver.org/).
 
-## License
-Todo
+## Licence
+See [LICENCE](LICENCE).
 
 ## Maintainer
-Todo
+Dennis Hemker 
 
 
 
