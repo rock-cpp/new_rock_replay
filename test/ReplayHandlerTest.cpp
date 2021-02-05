@@ -7,6 +7,18 @@
 ReplayHandler replayHandler;
 const auto fileNames = LogFileHelper::parseFileNames({"../logs/trajectory_follower_Logger.0.log"});
 
+BOOST_AUTO_TEST_CASE(TestEmptyInit)
+{
+    replayHandler.init({}, "");
+
+    BOOST_TEST(replayHandler.getCurIndex() == 0);
+    BOOST_TEST(replayHandler.getMaxIndex() == 0);
+    BOOST_TEST(replayHandler.getMinSpan() == 0);
+    BOOST_TEST(replayHandler.getMaxSpan() == 0);
+
+    replayHandler.deinit();
+}
+
 BOOST_AUTO_TEST_CASE(TestInit)
 {
     replayHandler.init(fileNames, "");
@@ -115,7 +127,7 @@ BOOST_AUTO_TEST_CASE(TestPause)
 
     auto intermediateIndex = replayHandler.getCurIndex();
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    
+
     BOOST_TEST(replayHandler.getCurIndex() == intermediateIndex);
     BOOST_TEST(intermediateIndex > 0);
     BOOST_TEST(!replayHandler.isPlaying());

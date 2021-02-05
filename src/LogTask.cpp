@@ -26,7 +26,7 @@ LogTask::LogTask(const std::string& taskName, const std::string& prefix)
     }
     catch(std::runtime_error& e)
     {
-        LOG_WARN_S << "could not create task " << taskName << " due to missing typekit";
+        LOG_WARN_S << "could not create task " << taskName << " because " << e.what();
     }
 }
 

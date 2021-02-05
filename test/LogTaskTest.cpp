@@ -27,7 +27,16 @@ void setup()
 
 std::unique_ptr<LogTask> createLogTask(const std::string& taskName, const std::string& prefix = "")
 {
-    std::unique_ptr<LogTask> logTask = std::unique_ptr<LogTask>(new LogTask(taskName, prefix, orocos));
+    try
+    {
+        orocos.loadAllTypekitsForModel(taskName);
+    }
+    catch(...)
+    {
+
+    }
+    
+    std::unique_ptr<LogTask> logTask = std::unique_ptr<LogTask>(new LogTask(taskName, prefix));
     return logTask;
 }
 
@@ -39,7 +48,7 @@ BOOST_AUTO_TEST_CASE(TestTaskCreation)
     auto missingTask = createLogTask("non_existing", "prefix/");
 
     BOOST_TEST(trajectoryFollowerTask->isValid());
-    BOOST_TEST(!missingTask->isValid());
+    BOOST_TEST(missingTask->isValid());
 
     BOOST_TEST(trajectoryFollowerTask->getName() == "trajectory_follower");
     BOOST_TEST(missingTask->getName() == "prefix/non_existing");
@@ -67,7 +76,7 @@ BOOST_AUTO_TEST_CASE(TestStreamLoadingWithWrongTask)
     auto inputStream = *dynamic_cast<pocolog_cpp::InputDataStream*>(multiFileIndex.getAllStreams().front());
     bool streamWasAdded = missingTask->addStream(inputStream);
 
-    BOOST_TEST(!missingTask->isValid());
+    BOOST_TEST(missingTask->isValid());
     BOOST_TEST(missingTask->getPortCollection().empty());
     BOOST_TEST(!streamWasAdded);
 }

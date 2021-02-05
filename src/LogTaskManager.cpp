@@ -125,14 +125,15 @@ bool LogTaskManager::loadTypekitsAndAddStreamToLogTask(pocolog_cpp::InputDataStr
     try
     {
         orocos.loadAllTypekitsForModel(modelName);
+        LogTask& logTask = findOrCreateLogTask(inputStream.getName());
+        return logTask.addStream(inputStream);
     }
     catch(...)
     {
         LOG_WARN_S << "cannot load typekits for stream " << inputStream.getName();
     }
 
-    LogTask& logTask = findOrCreateLogTask(inputStream.getName());
-    return logTask.addStream(inputStream);
+    return false;
 }
 
 void LogTaskManager::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)

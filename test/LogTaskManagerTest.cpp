@@ -6,8 +6,13 @@
 #include <set>
 
 const auto fileNames = LogFileHelper::parseFileNames({"../logs/trajectory_follower_Logger.0.log"});
-const auto fileNamesWithoutTypekits = LogFileHelper::parseFileNames({"../logs/slam3d_Logger.0.log"});
 LogTaskManager manager;
+
+BOOST_AUTO_TEST_CASE(TestEmptyLoading)
+{
+    manager.init({}, "");
+    BOOST_TEST(!manager.getNumSamples());
+}
 
 BOOST_AUTO_TEST_CASE(TestSpawnTrajectoryFollower)
 {
@@ -54,20 +59,4 @@ BOOST_AUTO_TEST_CASE(TestTaskActivateReplayForPort)
 
     BOOST_TEST(replayedSampleActivated);
     BOOST_TEST(!replayedSampleDeactivated);
-}
-
-BOOST_AUTO_TEST_CASE(TestInitWithoutTypekit)
-{
-    manager.init(fileNamesWithoutTypekits, "");
-
-    BOOST_TEST(manager.getTaskCollection().size() == 1);
-    //BOOST_TEST(manager.getTaskCollection().at("slam3d").empty()); temporarily disabled because buildserver has a slam3d typekit
-}
-
-BOOST_AUTO_TEST_CASE(TestReplayWithException)
-{
-    manager.init(fileNamesWithoutTypekits, "");
-    bool canReplay = manager.replaySample();
-
-    BOOST_TEST(!canReplay);
 }
