@@ -11,13 +11,11 @@
 #include <rtt/types/Types.hpp>
 #include <string>
 
-LogTask::LogTask(const std::string& taskName, const std::string& prefix, orocos_cpp::OrocosCpp& orocos)
+LogTask::LogTask(const std::string& taskName, const std::string& prefix)
     : prefixedName(prefix + taskName)
 {
     try
     {
-        orocos.loadAllTypekitsForModel(taskName);
-
         task = std::unique_ptr<RTT::TaskContext>(new RTT::TaskContext(prefixedName));
         RTT::corba::TaskContextServer::Create(task.get());
         RTT::corba::CorbaDispatcher* dispatcher = RTT::corba::CorbaDispatcher::Instance(task->ports());

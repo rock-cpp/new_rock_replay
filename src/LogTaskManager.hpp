@@ -35,7 +35,7 @@ public:
 
         /**
          * @brief Indicates whether loading from MultiFileIndex stream was valid.
-         * Does not indicate if that unmarshaling can be performed.
+         * Does not indicate if unmarshaling can be performed.
          */
         bool valid;
     };
@@ -122,6 +122,17 @@ private:
      * @return LogTask& Reference to the corresponding LogTask for the stream.
      */
     LogTask& findOrCreateLogTask(const std::string& streamName);
+
+    /**
+     * @brief Loads the typekit for the given stream.
+     * If the stream does not contain a model name in its metadata, a loading
+     * via the stream name is attempted.
+     * Finally, the stream is added to its corresponding log task.
+     * 
+     * @param inputStram: InputDataStream to load typekits for and to add to a log task.
+     * @return True if the stream was added to the log task.
+     */
+    bool loadTypekitsAndAddStreamToLogTask(pocolog_cpp::InputDataStream& inputStream);
 
     /**
      * @brief Prefix for all LogTasks.

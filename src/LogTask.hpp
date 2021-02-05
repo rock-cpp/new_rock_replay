@@ -109,9 +109,8 @@ public:
      *
      * @param taskName: Name of orocos task.
      * @param prefix: Prefix to add for task.
-     * @param orocos: Orocos convenience class reference.
      */
-    LogTask(const std::string& taskName, const std::string& prefix, orocos_cpp::OrocosCpp& orocos);
+    LogTask(const std::string& taskName, const std::string& prefix);
 
     /**
      * @brief Destructor.

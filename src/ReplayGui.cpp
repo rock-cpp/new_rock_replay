@@ -125,7 +125,7 @@ void ReplayGui::setIntervalB()
 
 void ReplayGui::togglePlay()
 {
-    if(!replayHandler.isPlaying())
+    if(replayHandler.getMaxIndex() && !replayHandler.isPlaying())
     {
         checkFinishedTimer->start();
         replayHandler.play();

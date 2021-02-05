@@ -2,6 +2,7 @@
 
 #include "LogFileHelper.hpp"
 
+#include <algorithm>
 #include <boost/algorithm/clamp.hpp>
 
 ReplayHandler::~ReplayHandler()
@@ -12,6 +13,7 @@ ReplayHandler::~ReplayHandler()
 void ReplayHandler::init(const std::vector<std::string>& fileNames, const std::string& prefix, const std::vector<std::string>& whiteList)
 {
     manager.init(fileNames, prefix, whiteList);
+    gotSamplesToPlay = manager.getNumSamples();
     targetSpeed = 1.;
     currentSpeed = 0;
     curIndex = 0;
@@ -19,11 +21,15 @@ void ReplayHandler::init(const std::vector<std::string>& fileNames, const std::s
     playing = false;
     running = true;
     replayWasValid = true;
-    maxIdx = manager.getNumSamples() - 1;
+    maxIdx = gotSamplesToPlay ? manager.getNumSamples() - 1 : 0;
     minSpan = 0;
     maxSpan = maxIdx;
     setSampleIndex(curIndex);
-    replayThread = std::thread(std::bind(&ReplayHandler::replaySamples, this));
+
+    if(gotSamplesToPlay)
+    {
+        replayThread = std::thread(std::bind(&ReplayHandler::replaySamples, this));
+    }
 }
 
 void ReplayHandler::deinit()
@@ -35,7 +41,7 @@ void ReplayHandler::deinit()
     }
     playCondition.notify_one();
 
-    if(replayThread.joinable())
+    if(gotSamplesToPlay && replayThread.joinable())
     {
         replayThread.join();
     }
@@ -110,6 +116,7 @@ void ReplayHandler::stop()
 
     std::lock_guard<std::mutex> lock(playMutex);
     playing = false;
+    currentSpeed = 0;
     setSampleIndex(curIndex);
     playCondition.notify_one();
 }
@@ -139,8 +146,16 @@ void ReplayHandler::previous()
 
 void ReplayHandler::setSampleIndex(uint64_t index)
 {
-    curIndex = boost::algorithm::clamp(index, minSpan, maxSpan);
-    curMetadata = manager.setIndex(index);
+    if(gotSamplesToPlay)
+    {
+        curIndex = boost::algorithm::clamp(index, minSpan, maxSpan);
+        curMetadata = manager.setIndex(index);
+    }
+    else
+    {
+        curMetadata.portName = "Not available";
+        curMetadata.valid = true;
+    }
 }
 
 void ReplayHandler::setMinSpan(uint64_t minIdx)

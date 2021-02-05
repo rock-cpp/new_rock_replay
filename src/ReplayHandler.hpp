@@ -313,6 +313,13 @@ private:
     bool playing;
 
     /**
+     * @brief Indicator if the multi file index contains samples to play.
+     * This cannot be the case, e.g. when no suitable typekits are available
+     * or the streams are emtpy.
+     */
+    bool gotSamplesToPlay;
+
+    /**
      * @brief Mutex to lock replay variables related to replay.
      *
      */

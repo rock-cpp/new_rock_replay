@@ -22,11 +22,7 @@ void LogTaskManager::init(const std::vector<std::string>& fileNames, const std::
         if(LogFileHelper::isWhiteListed(st->getName(), whiteList))
         {
             pocolog_cpp::InputDataStream* inputSt = dynamic_cast<pocolog_cpp::InputDataStream*>(st);
-            if(inputSt)
-            {
-                LogTask& logTask = findOrCreateLogTask(inputSt->getName());
-                return logTask.addStream(*inputSt);
-            }
+            return loadTypekitsAndAddStreamToLogTask(*inputSt);
         }
         else
         {
@@ -104,12 +100,39 @@ LogTask& LogTaskManager::findOrCreateLogTask(const std::string& streamName)
 
     if(!logTask)
     {
-        logTask = std::make_shared<LogTask>(taskNameAndPort.first, prefix, orocos);
+        logTask = std::make_shared<LogTask>(taskNameAndPort.first, prefix);
     }
 
     streamName2LogTask.emplace(streamName, logTask);
 
     return *logTask;
+}
+
+bool LogTaskManager::loadTypekitsAndAddStreamToLogTask(pocolog_cpp::InputDataStream& inputStream)
+{
+    std::string modelName = LogFileHelper::splitStreamName(inputStream.getName()).first;
+
+    try
+    {
+        modelName = inputStream.getTaskModel();
+    }
+    catch(...)
+    {
+        LOG_WARN_S << "stream " << inputStream.getName()
+                   << " does not contain necessary metadata for its task model. Trying to load typekit via stream name";
+    }
+
+    try
+    {
+        orocos.loadAllTypekitsForModel(modelName);
+    }
+    catch(...)
+    {
+        LOG_WARN_S << "cannot load typekits for stream " << inputStream.getName();
+    }
+
+    LogTask& logTask = findOrCreateLogTask(inputStream.getName());
+    return logTask.addStream(inputStream);
 }
 
 void LogTaskManager::activateReplayForPort(const std::string& taskName, const std::string& portName, bool on)
