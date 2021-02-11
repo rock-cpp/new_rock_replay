@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(TestStreamLoadingWithWrongTask)
 BOOST_AUTO_TEST_CASE(TestAddingWrongStream)
 {
     auto slamMultiFileIndex = pocolog_cpp::MultiFileIndex(false);
-    slamMultiFileIndex.createIndex(LogFileHelper::parseFileNames({"../logs/slam3d_Logger.0.log"}));
+    slamMultiFileIndex.createIndex(LogFileHelper::parseFileNames({logFolder + "slam3d_Logger.0.log"}));
 
     for(const auto& stream : slamMultiFileIndex.getAllStreams())
     {

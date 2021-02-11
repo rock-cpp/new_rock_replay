@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(TestInit)
     BOOST_TEST(replayHandler.getCurSamplePortName() == "trajectory_follower.follower_data");
     BOOST_TEST(!replayHandler.isPlaying());
     BOOST_TEST(!replayHandler.hasFinished());
-    BOOST_TEST(replayHandler.getCurTimeStamp() == "20161118-11:08:20:786284+0000");
+    BOOST_TEST(replayHandler.getCurTimeStamp().find("08:20:786284+0000") != std::string::npos);
     BOOST_TEST(replayHandler.canSampleBeReplayed());
 }
 
