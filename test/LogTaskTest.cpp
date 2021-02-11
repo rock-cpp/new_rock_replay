@@ -1,5 +1,6 @@
 #include "LogTask.hpp"
 
+#include "FileLocationHandler.hpp"
 #include "LogFileHelper.hpp"
 
 #include <boost/test/unit_test.hpp>
@@ -10,7 +11,8 @@
 #include <thread>
 #include <trajectory_follower/TrajectoryFollowerTypes.hpp>
 
-const auto fileNames = LogFileHelper::parseFileNames({"../logs/trajectory_follower_Logger.0.log"});
+const std::string logFolder = getLogFilePath();
+const auto fileNames = LogFileHelper::parseFileNames({logFolder + "trajectory_follower_Logger.0.log"});
 pocolog_cpp::MultiFileIndex multiFileIndex = pocolog_cpp::MultiFileIndex(false);
 orocos_cpp::OrocosCpp orocos;
 std::unique_ptr<LogTask> trajectoryFollowerTask;
@@ -33,9 +35,8 @@ std::unique_ptr<LogTask> createLogTask(const std::string& taskName, const std::s
     }
     catch(...)
     {
-
     }
-    
+
     std::unique_ptr<LogTask> logTask = std::unique_ptr<LogTask>(new LogTask(taskName, prefix));
     return logTask;
 }
@@ -89,7 +90,7 @@ BOOST_AUTO_TEST_CASE(TestAddingWrongStream)
     for(const auto& stream : slamMultiFileIndex.getAllStreams())
     {
         bool streamWasAdded = trajectoryFollowerTask->addStream(*dynamic_cast<pocolog_cpp::InputDataStream*>(stream));
-        
+
         BOOST_TEST(!streamWasAdded);
         BOOST_TEST(trajectoryFollowerTask->getPortCollection().size() == 3);
     }

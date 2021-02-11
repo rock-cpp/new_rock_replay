@@ -1,11 +1,13 @@
 #include "LogTaskManager.hpp"
 
+#include "FileLocationHandler.hpp"
 #include "LogFileHelper.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <set>
 
-const auto fileNames = LogFileHelper::parseFileNames({"../logs/trajectory_follower_Logger.0.log"});
+const std::string logFolder = getLogFilePath();
+const auto fileNames = LogFileHelper::parseFileNames({logFolder + "trajectory_follower_Logger.0.log"});
 LogTaskManager manager;
 
 BOOST_AUTO_TEST_CASE(TestEmptyLoading)
