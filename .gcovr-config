@@ -1,0 +1,5 @@
+root = .
+filter = src/
+exclude = src/ReplayGui.cpp
+exclude = src/Main.cpp
+

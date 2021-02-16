@@ -1,0 +1,1 @@
+Checks: 'boost-*,bugprone-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-member-init,hicpp-*,-hicpp-member-init,modernize-*'

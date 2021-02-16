@@ -1,55 +1,37 @@
-rock_replay
-=============
-A log file replay package
+# Rock Replay ![pipeline](https://git.hb.dfki.de/badge_server/rock-cpp/rock_replay/pipeline) ![build](https://git.hb.dfki.de/badge_server/rock-cpp/rock_replay/build) ![test](https://git.hb.dfki.de/badge_server/rock-cpp/rock_replay/test) ![test_coverage](https://git.hb.dfki.de/badge_server/rock-cpp/rock_replay/test_coverage)
+
+A fast log file replay package for rock's logging system, written completely in C++. Currently, it utilizes Qt4, which is abandoned in Ubuntu 20.04 and later. Qt5 support is planned to be implemented next.
+
+![](doc/rock_replay2.png)
+
+## Usage
+Run the following from a terminal with sourced env.sh:
+```
+Usage: rock-replay2 {logfile|*}.log or folder.
+Logging can be controlled via base-logging variables.
+Available options:
+  --help                show this message
+  --prefix arg          add prefix to all tasks
+  --whitelist arg       comma-separated list of regular expressions to filter 
+                        streams
+  --log-files arg       log files
+```
+
+## Bug Reports and Feature Requests
+Please use the [GitHub Issue Tracker](https://github.com/rock-cpp/rock_replay/issues) of this repository.
+
+## Contributing
+See [here](doc/CONTRIBUTING.md) for information.
+
+## Versioning
+The software is versioned using [Semantic Versioning](https://semver.org/).
+
+## Licence
+See [LICENCE](LICENCE).
+
+## Maintainer
+Dennis Hemker 
 
 
 
-License
--------
-dummy-license
 
-Installation
-------------
-The easiest way to build and install this package is to use Rock's build system.
-See [this page](http://rock-robotics.org/stable/documentation/installation.html)
-on how to install Rock.
-
-However, if you feel that it's too heavy for your needs, Rock aims at having
-most of its "library" packages (such as this one) to follow best practices. See
-[this page](http://rock-robotics.org/stable/documentation/packages/outside_of_rock.html)
-for installation instructions outside of Rock.
-
-Rock CMake Macros
------------------
-
-This package uses a set of CMake helper shipped as the Rock CMake macros.
-Documentations is available on [this page](http://rock-robotics.org/stable/documentation/packages/cmake_macros.html).
-
-Rock Standard Layout
---------------------
-
-This directory structure follows some simple rules, to allow for generic build
-processes and simplify reuse of this project. Following these rules ensures that
-the Rock CMake macros automatically handle the project's build process and
-install setup properly.
-
-STRUCTURE
--- src/ 
-	Contains all header (*.h/*.hpp) and source files
--- build/
-	The target directory for the build process, temporary content
--- bindings/
-	Language bindings for this package, e.g. put into subfolders such as
-   |-- ruby/ 
-        Ruby language bindings
--- viz/
-        Source files for a vizkit plugin / widget related to this library 
--- resources/
-	General resources such as images that are needed by the program
--- configuration/
-	Configuration files for running the program
--- external/
-	When including software that needs a non standard installation process, or one that can be
-	easily embedded include the external software directly here
--- doc/
-	should contain the existing doxygen file: doxygen.conf
