@@ -17,10 +17,7 @@ rock_library(rock_replay
         base-logging
         orocos_cpp
         pocolog_cpp
-        vizkit3d
     LIBS
-        pthread
-        boost_program_options
         gcov
 )
 
@@ -35,6 +32,8 @@ rock_executable(rock-replay2
         main.ui
     DEPS
         rock_replay
+    LIBS
+        boost_program_options
 )
 
 
