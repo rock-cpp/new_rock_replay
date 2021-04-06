@@ -1,6 +1,6 @@
-find_package(Qt4 REQUIRED)
+rock_find_qt4()
 
-QT4_ADD_RESOURCES(VIZ_RESC ressources.qrc)
+QT4_ADD_RESOURCES(VIZ_RESOURCES ressources.qrc)
 
 rock_library(rock_replay
     SOURCES
@@ -8,32 +8,31 @@ rock_library(rock_replay
         LogTask.cpp
         LogTaskManager.cpp
         LogFileHelper.cpp
-        ReplayGui.cpp
-        ${VIZ_RESC}
-    MOC
-        ReplayGui.h
     HEADERS
         ReplayHandler.hpp
         LogTask.hpp
         LogTaskManager.hpp
         LogFileHelper.hpp
-        ReplayGui.h
     DEPS_PKGCONFIG
         base-logging
         orocos_cpp
         pocolog_cpp
-        QtCore
-        QtGui
         vizkit3d
-    UI
-        main.ui
+    LIBS
+        pthread
+        boost_program_options
+        gcov
 )
-
-target_link_libraries(rock_replay pthread boost_program_options gcov)
 
 rock_executable(rock-replay2
     SOURCES
         Main.cpp
+        ReplayGui.cpp
+        ${VIZ_RESOURCES}
+    MOC
+        ReplayGui.h
+    UI
+        main.ui
     DEPS
         rock_replay
 )
