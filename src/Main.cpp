@@ -5,6 +5,36 @@
 
 ReplayHandler replayHandler;
 
+void startHeadless(const ArgParser& argParser)
+{
+    std::signal(SIGINT, [](int sig) { replayHandler.stop(); });
+    replayHandler.init(argParser.fileNames, argParser.prefix, argParser.whiteListTokens);
+    replayHandler.play();
+
+    while(replayHandler.isPlaying())
+    {
+        std::cout << "replaying [" << replayHandler.getCurIndex() << "/" << replayHandler.getMaxIndex()
+                  << "]: " << replayHandler.getCurSamplePortName() << "\r";
+    }
+
+    std::cout << std::endl;
+
+    replayHandler.stop();
+    std::cout << "replay handler stopped" << std::endl;
+}
+
+int startGui(int argc, char* argv[], const ArgParser& argParser)
+{
+    QApplication a(argc, argv);
+    ReplayGui gui;
+
+    gui.initReplayHandler(argParser.fileNames, argParser.prefix, argParser.whiteListTokens);
+    gui.updateTaskView();
+
+    gui.show();
+    return a.exec();
+}
+
 int main(int argc, char* argv[])
 {
     ArgParser argParser;
@@ -12,31 +42,11 @@ int main(int argc, char* argv[])
     {
         if(argParser.headless)
         {
-            std::signal(SIGINT, [](int sig) { replayHandler.stop(); });
-            replayHandler.init(argParser.fileNames, argParser.prefix, argParser.whiteListTokens);
-            replayHandler.play();
-
-            while(replayHandler.isPlaying())
-            {
-                std::cout << "replaying [" << replayHandler.getCurIndex() << "/" << replayHandler.getMaxIndex()
-                          << "]: " << replayHandler.getCurSamplePortName() << "\r";
-            }
-
-            std::cout << std::endl;
-
-            replayHandler.stop();
-            std::cout << "replay handler stopped" << std::endl;
+            startHeadless(argParser);
         }
         else
         {
-            QApplication a(argc, argv);
-            ReplayGui gui;
-
-            gui.initReplayHandler(argParser.fileNames, argParser.prefix, argParser.whiteListTokens);
-            gui.updateTaskView();
-
-            gui.show();
-            return a.exec();
+            startGui(argc, argv, argParser);
         }
     }
 
