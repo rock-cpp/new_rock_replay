@@ -1,6 +1,8 @@
-rock_find_qt4()
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-QT4_ADD_RESOURCES(VIZ_RESOURCES ressources.qrc)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 rock_library(rock_replay
     SOURCES
@@ -35,12 +37,10 @@ rock_executable(rock-replay2
     SOURCES
         Main.cpp
         ReplayGui.cpp
-        ${VIZ_RESOURCES}
-    MOC
-        ReplayGui.h
-    UI
         main.ui
+        ressources.qrc
     DEPS
         rock_replay
         arg_parser
+        Qt5::Widgets
 )
