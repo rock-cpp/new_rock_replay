@@ -65,3 +65,19 @@ bool LogFileHelper::isWhiteListed(const std::string& streamName, const std::vect
 
     return false;
 }
+
+std::map<std::string, std::string> LogFileHelper::parseRenamings(const std::vector<std::string>& renamings) 
+{
+    std::map<std::string, std::string> renamingMap;
+
+    for(const auto& renaming : renamings)
+    {
+        auto delimPos = renaming.find(":");
+        if(delimPos != std::string::npos)
+        {
+            renamingMap.emplace(renaming.substr(0, delimPos), renaming.substr(delimPos + 1, renaming.size()));
+        }
+    }
+
+    return renamingMap;
+}

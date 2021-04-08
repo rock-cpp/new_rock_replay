@@ -49,4 +49,12 @@ public:
      * @return True is stream is whitelisted, false otherwise.
      */
     static bool isWhiteListed(const std::string& streamName, const std::vector<std::string>& whiteListRegEx);
+
+    /**
+     * @brief Parses renamings in the form of foo:bar and splits at the : delimiter.
+     * Invalid renamings that are missing the : separator are ignored.
+     * @param renamings List of renamings to parse.
+     * @return std::map<std::string, std::string> Map of renamings.
+     */
+    static std::map<std::string, std::string> parseRenamings(const std::vector<std::string>& renamings);
 };

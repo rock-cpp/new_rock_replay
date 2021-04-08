@@ -18,6 +18,7 @@ public:
     std::string prefix;
     std::vector<std::string> whiteListTokens;
     std::vector<std::string> fileNames;
+    std::vector<std::string> renamings;
     bool headless = false;
 
 private:
