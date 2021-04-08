@@ -21,6 +21,16 @@ rock_library(rock_replay
         gcov
 )
 
+rock_library(arg_parser
+    SOURCES
+        ArgParser.cpp
+    HEADERS
+        ArgParser.hpp 
+    LIBS
+        boost_program_options
+        gcov
+)
+
 rock_executable(rock-replay2
     SOURCES
         Main.cpp
@@ -32,9 +42,5 @@ rock_executable(rock-replay2
         main.ui
     DEPS
         rock_replay
-    LIBS
-        boost_program_options
+        arg_parser
 )
-
-
-
