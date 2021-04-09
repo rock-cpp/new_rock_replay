@@ -43,18 +43,10 @@ public:
     /**
      * @brief Checks whether a stream name is whitelisted given the list of regular expressions,
      * An empty list of regular expressions indicates returns always true.
-     * 
+     *
      * @param streamName: Name of the stream.
      * @param whiteListRegEx: List of regular expressions to check against.
      * @return True is stream is whitelisted, false otherwise.
      */
     static bool isWhiteListed(const std::string& streamName, const std::vector<std::string>& whiteListRegEx);
-
-    /**
-     * @brief Parses renamings in the form of foo:bar and splits at the : delimiter.
-     * Invalid renamings that are missing the : separator are ignored.
-     * @param renamings List of renamings to parse.
-     * @return std::map<std::string, std::string> Map of renamings.
-     */
-    static std::map<std::string, std::string> parseRenamings(const std::vector<std::string>& renamings);
 };

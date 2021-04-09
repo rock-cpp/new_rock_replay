@@ -68,29 +68,3 @@ BOOST_AUTO_TEST_CASE(TestStreamNameEmpty)
 {
     testStreamSplit("", "", "");
 }
-
-BOOST_AUTO_TEST_CASE(TestRenamingParserEmpty)
-{
-    auto result = LogFileHelper::parseRenamings({});
-
-    BOOST_TEST(result.empty());
-}
-
-BOOST_AUTO_TEST_CASE(TestRenamingParser)
-{
-    const std::vector<std::string> renamings = {"foo:bar", "bar:baz"};
-    auto result = LogFileHelper::parseRenamings(renamings);
-
-    BOOST_TEST(result.size() == 2);
-    BOOST_TEST(result.at("foo") == "bar");
-    BOOST_TEST(result.at("bar") == "baz");
-}
-
-BOOST_AUTO_TEST_CASE(TestRenamingParserInvalid)
-{
-    const std::vector<std::string> renamings = {"foo:bar", "barbaz"};
-    auto result = LogFileHelper::parseRenamings(renamings);
-
-    BOOST_TEST(result.size() == 1);
-    BOOST_TEST(result.at("foo") == "bar");
-}
