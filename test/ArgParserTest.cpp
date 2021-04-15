@@ -12,6 +12,17 @@ void createCommandLineArgs(char* result[], const std::vector<std::string>& args)
     result[args.size()] = NULL;
 }
 
+BOOST_AUTO_TEST_CASE(TestHelpOutput)
+{
+    ArgParser argParser;
+
+    const std::vector<std::string> args = {"test"};
+    char* argsResult[args.size() + 1];
+    createCommandLineArgs(argsResult, args);
+
+    BOOST_TEST(!argParser.parseArguments(args.size(), argsResult));
+}
+
 BOOST_AUTO_TEST_CASE(TestWhitelist)
 {
     ArgParser argParser;
