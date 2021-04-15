@@ -8,7 +8,7 @@ ReplayHandler replayHandler;
 void startHeadless(const ArgParser& argParser)
 {
     std::signal(SIGINT, [](int sig) { replayHandler.stop(); });
-    replayHandler.init(argParser.fileNames, argParser.prefix, argParser.whiteListTokens);
+    replayHandler.init(argParser.fileNames, argParser.prefix, argParser.whiteListTokens, argParser.renamings);
     replayHandler.play();
 
     while(replayHandler.isPlaying())
@@ -28,7 +28,7 @@ int startGui(int argc, char* argv[], const ArgParser& argParser)
     QApplication a(argc, argv);
     ReplayGui gui;
 
-    gui.initReplayHandler(argParser.fileNames, argParser.prefix, argParser.whiteListTokens);
+    gui.initReplayHandler(argParser.fileNames, argParser.prefix, argParser.whiteListTokens, argParser.renamings);
     gui.updateTaskView();
 
     gui.show();

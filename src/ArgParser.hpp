@@ -18,10 +18,11 @@ public:
     std::string prefix;
     std::vector<std::string> whiteListTokens;
     std::vector<std::string> fileNames;
-    std::vector<std::string> renamings;
+    std::map<std::string, std::string> renamings;
     bool headless = false;
 
 private:
     std::string whiteListInput;
+    std::vector<std::string> renamingInput;
     std::vector<std::string> fileArgs;
 };
