@@ -1,8 +1,4 @@
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+rock_find_qt5()
 
 rock_library(rock_replay
     SOURCES
@@ -27,7 +23,7 @@ rock_library(arg_parser
     SOURCES
         ArgParser.cpp
     HEADERS
-        ArgParser.hpp 
+        ArgParser.hpp
     LIBS
         boost_program_options
         gcov
