@@ -1,4 +1,4 @@
-rock_find_qt5()
+rock_find_qt5(Widgets)
 
 rock_library(rock_replay
     SOURCES
