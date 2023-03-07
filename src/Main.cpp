@@ -43,6 +43,10 @@ int main(int argc, char* argv[])
         if(argParser.headless)
         {
             startHeadless(argParser);
+            if(argParser.no_exit)
+            {
+                while(true) sleep(1);
+            }
         }
         else
         {

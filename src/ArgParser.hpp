@@ -20,6 +20,7 @@ public:
     std::vector<std::string> fileNames;
     std::map<std::string, std::string> renamings;
     bool headless = false;
+    bool no_exit = false;
 
 private:
     std::string whiteListInput;
