@@ -7,7 +7,8 @@ ReplayHandler replayHandler;
 
 void startHeadless(const ArgParser& argParser)
 {
-    std::signal(SIGINT, [](int sig) { replayHandler.stop(); });
+    static bool no_exit = argParser.no_exit;
+    std::signal(SIGINT, [](int sig) { replayHandler.stop(); no_exit = false; });
     replayHandler.init(argParser.fileNames, argParser.prefix, argParser.whiteListTokens, argParser.renamings);
     replayHandler.play();
 
@@ -21,6 +22,8 @@ void startHeadless(const ArgParser& argParser)
 
     replayHandler.stop();
     std::cout << "replay handler stopped" << std::endl;
+    
+    while(no_exit) sleep(1);
 }
 
 int startGui(int argc, char* argv[], const ArgParser& argParser)
@@ -43,10 +46,6 @@ int main(int argc, char* argv[])
         if(argParser.headless)
         {
             startHeadless(argParser);
-            if(argParser.no_exit)
-            {
-                while(true) sleep(1);
-            }
         }
         else
         {
