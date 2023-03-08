@@ -21,6 +21,7 @@ public:
     std::map<std::string, std::string> renamings;
     bool headless = false;
     bool no_exit = false;
+    bool quiet = false;
 
 private:
     std::string whiteListInput;

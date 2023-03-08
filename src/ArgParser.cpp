@@ -19,7 +19,8 @@ bool ArgParser::parseArguments(int argc, char* argv[])
         ("headless", bool_switch(&headless), "only use the cli")
         ("no-exit", bool_switch(&no_exit), "keep running when replay is finished, only relevant in headless mode")
         ("rename", value<std::vector<std::string>>(&renamingInput), "rename task, e.g. trajectory_follower:traj_follower")
-        ("log-files", value<std::vector<std::string>>(&fileArgs), "log files");
+        ("log-files", value<std::vector<std::string>>(&fileArgs), "log files")
+        ("quiet", bool_switch(&quiet), "Don't print verbose status updates to stdout");
 
     positional_options_description p;
     p.add("log-files", -1);

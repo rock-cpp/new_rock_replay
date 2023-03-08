@@ -14,8 +14,11 @@ void startHeadless(const ArgParser& argParser)
 
     while(replayHandler.isPlaying())
     {
-        std::cout << "replaying [" << replayHandler.getCurIndex() << "/" << replayHandler.getMaxIndex()
-                  << "]: " << replayHandler.getCurSamplePortName() << "\r";
+        if(!argParser.quiet){
+            std::cout << "replaying [" << replayHandler.getCurIndex() << "/" << replayHandler.getMaxIndex()
+                      << "]: " << replayHandler.getCurSamplePortName() << "\r";
+        }
+        usleep(5000);
     }
 
     std::cout << std::endl;
