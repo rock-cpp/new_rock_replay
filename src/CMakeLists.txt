@@ -1,5 +1,7 @@
 rock_find_qt5(Widgets)
 
+qt5_add_resources(VIZ_RESOURCES ressources.qrc)
+
 rock_library(rock_replay
     SOURCES
         ReplayHandler.cpp
@@ -33,8 +35,11 @@ rock_executable(rock-replay2
     SOURCES
         Main.cpp
         ReplayGui.cpp
+        ${VIZ_RESOURCES}
+    UI
         main.ui
-        ressources.qrc
+    MOC
+        ReplayGui.h
     DEPS
         rock_replay
         arg_parser
