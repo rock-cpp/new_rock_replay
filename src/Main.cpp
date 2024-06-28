@@ -3,16 +3,20 @@
 
 #include <csignal>
 
-ReplayHandler replayHandler;
-
 void startHeadless(const ArgParser& argParser)
 {
-    static bool no_exit = argParser.no_exit;
-    std::signal(SIGINT, [](int sig) { replayHandler.stop(); no_exit = false; });
+    //There can only be one replayHandler(due to orocos_cpp), and since
+    //startGui does use a one on its stack, it would be unusable if this
+    //one were static.
+    ReplayHandler replayHandler;
+
+    static volatile bool do_quit = false;
+    //This must be a function, so it cannot capture anything.
+    std::signal(SIGINT, [](int sig) { do_quit = true; });
     replayHandler.init(argParser.fileNames, argParser.prefix, argParser.whiteListTokens, argParser.renamings);
     replayHandler.play();
 
-    while(replayHandler.isPlaying())
+    while(replayHandler.isPlaying() && !do_quit)
     {
         if(!argParser.quiet){
             std::cout << "replaying [" << replayHandler.getCurIndex() << "/" << replayHandler.getMaxIndex()
@@ -26,7 +30,7 @@ void startHeadless(const ArgParser& argParser)
     replayHandler.stop();
     std::cout << "replay handler stopped" << std::endl;
     
-    while(no_exit) sleep(1);
+    while(argParser.no_exit && !do_quit) sleep(1);
 }
 
 int startGui(int argc, char* argv[], const ArgParser& argParser)
