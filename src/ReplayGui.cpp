@@ -75,7 +75,7 @@ void ReplayGui::initReplayHandler(
         title = "Rock-Replay";
         break;
     case 1:
-        title = QString(fileNames[0].c_str());
+        title = QString::fromStdString(fileNames[0]);
         break;
     default:
         title = QString("Multi Logfile Replay");
@@ -188,8 +188,8 @@ void ReplayGui::statusUpdate()
 {
     QString interval = "    [" + QString::number(replayHandler.getMinSpan()) + "/" + QString::number(replayHandler.getMaxSpan()) + "]";
     ui.curSampleNum->setText(QString::number(replayHandler.getCurIndex()) + "/" + QString::number(replayHandler.getMaxIndex()) + interval);
-    ui.curTimestamp->setText(replayHandler.getCurTimeStamp().c_str());
-    ui.curPortName->setText(replayHandler.getCurSamplePortName().c_str());
+    ui.curTimestamp->setText(QString::fromStdString(replayHandler.getCurTimeStamp()));
+    ui.curPortName->setText(QString::fromStdString(replayHandler.getCurSamplePortName()));
     ui.curPortName->setAutoFillBackground(!replayHandler.canSampleBeReplayed());
     ui.progressSlider->setSliderPosition(replayHandler.getCurIndex());
     ui.speedBar->setValue(replayHandler.getCurrentSpeed() * 100);
@@ -269,20 +269,25 @@ void ReplayGui::updateTaskView()
 
     for(const auto& taskName2Ports : replayHandler.getTaskNamesWithPorts())
     {
-        auto* task = new QStandardItem(taskName2Ports.first.c_str());
+        auto* task = new QStandardItem(QString::fromStdString(taskName2Ports.first));
         task->setCheckable(false);
 
-        QList<QStandardItem*> portTypes;
-        for(const auto& portName : taskName2Ports.second)
+        for(const auto& portName : taskName2Ports.second.replayable)
         {
-            QStandardItem* port = new QStandardItem(portName.first.c_str());
+            QStandardItem* port = new QStandardItem(QString::fromStdString(portName.name));
             port->setCheckable(true);
             port->setData(Qt::Checked, Qt::CheckStateRole);
-            task->appendRow(port);
-            portTypes.push_back(new QStandardItem(portName.second.c_str()));
+            task->appendRow(QList<QStandardItem*> {
+                port, new QStandardItem(QString::fromStdString(portName.type))});
         }
-
-        task->appendColumn(portTypes);
+        for(const auto& portName : taskName2Ports.second.unreplayable)
+        {
+            QStandardItem* port = new QStandardItem(QString::fromStdString(portName.name));
+            port->setCheckable(false);
+            port->setEnabled(false);
+            task->appendRow(QList<QStandardItem*> {
+                port, new QStandardItem(QString::fromStdString(portName.type)+" [missing typekit]")});
+        }
 
         tasksModel->appendRow(task);
     }

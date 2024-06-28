@@ -41,16 +41,6 @@ public:
     };
 
     /**
-     * @brief Pair of port name and corresponding c++ data type.
-     */
-    using PortInfo = std::pair<std::string, std::string>;
-
-    /**
-     * @brief List of PortInfos.
-     */
-    using PortCollection = std::vector<PortInfo>;
-
-    /**
      * @brief Map of task name to corresponding list of PortInfos.
      */
     using TaskCollection = std::map<std::string, LogTask::PortCollection>;

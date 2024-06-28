@@ -96,13 +96,19 @@ public:
      * @brief Alias for pair of port name and port type.
      *
      */
-    using PortInfo = std::pair<std::string, std::string>;
+    struct PortInfo {
+        std::string name;
+        std::string type;
+    };
 
     /**
-     * @brief Alias for list of PortInfo.
+     * @brief Structure holding two lists: replayable ports and unreplayable ports
      *
      */
-    using PortCollection = std::vector<PortInfo>;
+    struct PortCollection {
+        std::vector<PortInfo> replayable;
+        std::vector<PortInfo> unreplayable;
+    };
 
     /**
      * @brief Constructor.
@@ -236,4 +242,11 @@ private:
      *
      */
     std::map<uint64_t, std::unique_ptr<PortHandle>> streamIdx2Port;
+
+    /**
+     * @brief Map of stream names to types
+     *
+     * Used for showing which ports are present but cannot be replayed
+     */
+    std::map<std::string, std::string> unreplayablePorts;
 };
