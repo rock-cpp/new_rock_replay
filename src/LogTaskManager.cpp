@@ -4,11 +4,13 @@
 
 #include <base-logging/Logging.hpp>
 #include <orocos_cpp/orocos_cpp.hpp>
+#include <orocos_cpp/PluginHelper.hpp>
 
 LogTaskManager::LogTaskManager()
 {
     orocos_cpp::OrocosCppConfig config;
     orocos.initialize(config);
+    haveLoadedAllTypeKits = false;
 }
 
 void LogTaskManager::init(
@@ -126,21 +128,52 @@ bool LogTaskManager::loadTypekitsAndAddStreamToLogTask(pocolog_cpp::InputDataStr
     {
         modelName = inputStream.getTaskModel();
     }
+    catch(std::exception &e)
+    {
+        LOG_WARN_S << "stream " << inputStream.getName()
+                   << " does not contain necessary metadata for its task model. Trying to load typekit via stream name"
+                   << "("<< typeid(e).name() << ": " << e.what() << ")";
+    }
     catch(...)
     {
         LOG_WARN_S << "stream " << inputStream.getName()
                    << " does not contain necessary metadata for its task model. Trying to load typekit via stream name";
     }
 
+    bool typekit_loaded = false;
     try
     {
         orocos.loadAllTypekitsForModel(modelName);
-        LogTask& logTask = findOrCreateLogTask(inputStream.getName());
-        return logTask.addStream(inputStream);
+        typekit_loaded = true;
+    }
+    catch(std::exception &e)
+    {
+        LOG_WARN_S << "cannot load typekits using modelName " << modelName << " for stream " << inputStream.getName() << "("<< typeid(e).name() << ": " << e.what() << ")";
     }
     catch(...)
     {
-        LOG_WARN_S << "cannot load typekits for stream " << inputStream.getName();
+        LOG_WARN_S << "cannot load typekits using modelName " << modelName << " for stream " << inputStream.getName();
+    }
+    if(!typekit_loaded && !haveLoadedAllTypeKits) {
+        haveLoadedAllTypeKits = true;
+        LOG_WARN_S << "Trying to load all typekits for stream " << inputStream.getName();
+        orocos_cpp::PluginHelper::loadAllTypekitAndTransports();
+    }
+    //even though the registry is available in inputStream.getStreamRegistry,
+    //we cannot do anything without the typekits, so best we can do is
+    //configure orocos_cpp with load_all_packages and hope the datatype
+    //can be found.
+    try {
+        LogTask& logTask = findOrCreateLogTask(inputStream.getName());
+        return logTask.addStream(inputStream);
+    }
+    catch(std::exception &e)
+    {
+        LOG_WARN_S << "cannot add stream to task for stream " << inputStream.getName() << "("<< typeid(e).name() << ": " << e.what() << ")";
+    }
+    catch(...)
+    {
+        LOG_WARN_S << "cannot add stream to task for stream " << inputStream.getName();
     }
 
     return false;

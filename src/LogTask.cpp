@@ -64,6 +64,8 @@ bool LogTask::addStream(pocolog_cpp::InputDataStream& stream)
             task->ports()->addPort(portHandle->port->getName(), *portHandle->port);
             streamIdx2Port.emplace(stream.getIndex(), std::move(portHandle));
             return true;
+        } else {
+            unreplayablePorts.emplace(portName, stream.getCXXType());
         }
     }
 
@@ -203,7 +205,11 @@ LogTask::PortCollection LogTask::getPortCollection()
     for(const auto& portHandlePair : streamIdx2Port)
     {
         const auto& portHandle = portHandlePair.second;
-        collection.emplace_back(portHandle->name, portHandle->inputDataStream.getCXXType());
+        collection.replayable.emplace_back(PortInfo{portHandle->name, portHandle->inputDataStream.getCXXType()});
+    }
+    for(const auto& p : unreplayablePorts)
+    {
+        collection.unreplayable.emplace_back(PortInfo{p.first, p.second});
     }
 
     return collection;

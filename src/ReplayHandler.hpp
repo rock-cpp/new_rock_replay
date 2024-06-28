@@ -15,6 +15,9 @@ class ReplayHandler
 {
 
 public:
+
+    using TaskCollection = LogTaskManager::TaskCollection;
+
     /**
      * @brief Constructor.
      *
@@ -118,7 +121,7 @@ public:
      * @brief Returns a map of task names with a list of their ports.
      * @return std::map<std::string, std::vector<std::string>> Map of task names with list of ports.
      */
-    std::map<std::string, std::vector<std::pair<std::string, std::string>>> getTaskNamesWithPorts();
+    TaskCollection getTaskNamesWithPorts();
 
     /**
      * @brief Returns the current sample timestamp.

@@ -49,7 +49,7 @@ void ReplayHandler::deinit()
     }
 }
 
-std::map<std::string, std::vector<std::pair<std::string, std::string>>> ReplayHandler::getTaskNamesWithPorts()
+ReplayHandler::TaskCollection ReplayHandler::getTaskNamesWithPorts()
 {
     return manager.getTaskCollection();
 }
